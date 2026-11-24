@@ -55,7 +55,7 @@ Top tiles: Received this year, Outstanding, Overdue, Forecast for the next 3 mon
 |---|---|
 | Logged | Time logged in the Timesheet, with its money value |
 | Forecast | Logged to date plus planned days still to come in the month |
-| Invoice | Optional invoice number and the date you sent it |
+| Invoice | Optional invoice number (the app suggests the next one from your last invoice: `2026-INV001` → `2026-INV002`, keeping your format and zeros, and starting again at `2027-INV001` in a new year, via "Use …") and the date you sent it. In Chrome / Edge, "Attach invoice" copies the PDF into your invoice folder (see below), and "Open invoice file" opens it later |
 | Received | A **money amount** you type in, in the client's currency (£, € or $), plus the date it arrived. "Mark received" fills the full logged amount |
 | Due | Invoice sent date (or month end if none) plus payment terms, with year |
 | Status | In progress, Planned, Invoiced, Awaiting payment, Part received, Received, Overdue |
@@ -75,7 +75,7 @@ Client list first; "Add client" opens the form.
 
 | Group | Fields |
 |---|---|
-| Client | Name, Color |
+| Client | Name, Role or type of work (optional, for example "Senior data analyst"; shown next to the rate on Today, Planner, Timesheet, Reports and the client list, and exported in the CSV), Description (optional free text, shown in the client list), Color |
 | Billing | Day or hourly rate, Rate, Currency, Hours per day (hourly only) |
 | Dates and payment | Start, End (optional), Payment terms (days) |
 | Days | Days I plan to work per week, Contract allowance, Contract days |
@@ -83,6 +83,7 @@ Client list first; "Add client" opens the form.
 Each field shows inline help, and errors appear next to the field. Below the list:
 
 - **Settings:** working days per week (capacity), date and number format (UK, US, Portuguese, Spanish, French, German), hide weekends. Weeks always start on Monday.
+- **Invoice folder (Chrome / Edge):** the folder where attached invoices are copied, organised as `Year/Month/InvoiceNo_Client_YYYY-MM.pdf`, for example `2026/10/2026-INV001_Wrangu-Barclays_2026-10.pdf`. Year and month are the month the invoice covers. The invoice number is required (it is part of the file name) and should be exactly the number printed on the invoice. If the file already exists you are asked before replacing it. If you change the invoice number later, the file is **renamed automatically** (the old name is removed); if the new name is already taken, or the file was moved, the app tells you and leaves things as they are. Attaching a new file to the same invoice replaces the earlier copy. Renaming a client does not rename files that already exist. "Remove link" only removes the link, never the file. The folder is chosen per browser; the data file stores only the relative path, so a folder synced by OneDrive works on every device. The browser may ask you to allow access again from time to time.
 - **Data file:** switch file, export a copy, import.
 - **Password (optional):** set, change, lock now, remove.
 

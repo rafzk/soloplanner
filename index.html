@@ -130,6 +130,9 @@ input.dt{width:128px;border:1px solid var(--line);border-radius:6px;padding:2px 
 form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
 form.f label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 form.f input,form.f select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink)}
+form.f textarea{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical;width:100%}
+form.af .grp .wide{grid-column:1/-1}
+.arow .desc{color:var(--muted);font-size:13px;margin-top:6px;max-width:80ch;white-space:normal}
 form.f input[type=checkbox]{width:18px;height:18px;padding:0}
 form.f label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
 form#sform{align-items:start}
@@ -274,6 +277,7 @@ details.past>summary{cursor:pointer;font-weight:600;font-size:18px;margin:28px 0
   </header>
   <div id="banner"></div>
   <input type="file" id="impfile" accept=".json,application/json" hidden>
+  <input type="file" id="invfile" accept=".pdf,application/pdf,image/*" hidden>
   <nav class="tabs" aria-label="Sections">
     <button class="tab" data-view="today">Today</button>
     <button class="tab" data-view="planner">Planner</button>
@@ -475,7 +479,77 @@ async function flush(force){
   saving=false; setStatus(); if(persist==='error') render();
   if(again){ again=false; flush(false); }
 }
+/* Invoice files: copied into a folder you choose, organised as Year / Month / Client_YYYY-MM_InvoiceNo.pdf */
+var supportsDir = !!window.showDirectoryPicker;
+var invDir = null, pendingInv = null;
+var safeName = function(s){ return String(s).trim().replace(/[\\\/:*?"<>|]+/g,'').replace(/\s+/g,'-').replace(/-{2,}/g,'-').replace(/^-|-$/g,''); };
+async function pickInvDir(){
+  try{ var h=await window.showDirectoryPicker({ mode:'readwrite' }); invDir=h; try{ await idbSet('invdir',h); }catch(e){} return true; }
+  catch(e){ return false; }
+}
+async function invDirReady(){
+  if(!invDir) return false;
+  try{ var p=await invDir.queryPermission({mode:'readwrite'}); if(p==='granted') return true; p=await invDir.requestPermission({mode:'readwrite'}); return p==='granted'; }
+  catch(e){ return false; }
+}
+async function invDirOf(path){
+  var parts=path.split('/'), name=parts.pop(), dir=invDir, i;
+  for(i=0;i<parts.length;i++) dir=await dir.getDirectoryHandle(parts[i]);
+  return { dir:dir, name:name, parts:parts };
+}
+/* When the invoice number changes, the attached file is renamed to match (the old name is removed). */
+async function renameInvoiceFile(key){
+  var inv=state.invoices[key]; if(!inv || !inv.file || !inv.no || !invDir) return;
+  var p=key.split('|'), a=byId(p[0]); if(!a) return;
+  var cur=inv.file.split('/'), oldName=cur[cur.length-1], ext=((/\.([a-z0-9]{2,4})$/i.exec(oldName)||[])[1]||'pdf').toLowerCase();
+  var newName=safeName(inv.no)+'_'+safeName(a.name)+'_'+p[1]+'.'+ext;
+  if(newName===oldName) return;
+  if(!(await invDirReady())){ toast('Number saved, but the file was not renamed. Allow access to the invoice folder and edit the number again.'); return; }
+  try{
+    var o=await invDirOf(inv.file), exists=false;
+    try{ await o.dir.getFileHandle(newName); exists=true; }catch(e){}
+    if(exists){ toast('A file named '+newName+' already exists, so the file was not renamed.'); return; }
+    var file=await (await o.dir.getFileHandle(oldName)).getFile();
+    var h=await o.dir.getFileHandle(newName,{create:true}), w=await h.createWritable();
+    await w.write(file); await w.close();
+    await o.dir.removeEntry(oldName);
+    inv.file=o.parts.concat([newName]).join('/'); changed(); render(); toast('File renamed to '+newName);
+  }catch(e){ toast('Number saved, but the file could not be renamed. Is it still in the invoice folder?'); }
+}
+async function attachInvoice(key,f){
+  var p=key.split('|'), a=byId(p[0]), ym=p[1], inv=state.invoices[key]; if(!a || !inv || !inv.no) return;
+  var prev=inv.file;
+  var ext=(/\.([a-z0-9]{2,4})$/i.exec(f.name)||[])[1]; ext=(ext||'pdf').toLowerCase();
+  var parts=[ym.slice(0,4), ym.slice(5,7)], name=safeName(inv.no)+'_'+safeName(a.name)+'_'+ym+'.'+ext;
+  try{
+    var dir=invDir, i;
+    for(i=0;i<parts.length;i++) dir=await dir.getDirectoryHandle(parts[i],{create:true});
+    var exists=false; try{ await dir.getFileHandle(name); exists=true; }catch(e){}
+    var write=async function(){
+      var h=await dir.getFileHandle(name,{create:true}), w=await h.createWritable();
+      await w.write(f); await w.close();
+      inv.file=parts.join('/')+'/'+name;
+      if(prev && prev!==inv.file){ try{ var o2=await invDirOf(prev); await o2.dir.removeEntry(o2.name); }catch(e){} } /* the earlier copy of this invoice is replaced */
+      changed(); render(); toast('Saved '+inv.file);
+    };
+    if(exists) askConfirm('Replace the existing file?', name+' already exists in '+parts.join('/')+'.', 'Replace', function(){ write().catch(function(){ toast('Could not save the file.'); }); });
+    else await write();
+  }catch(e){ toast('Could not save the invoice file.'); }
+}
+async function openInvoice(key){
+  var inv=state.invoices[key]; if(!inv || !inv.file) return;
+  if(!invDir){ toast('Choose the invoice folder in Clients › Invoice folder first.'); return; }
+  if(!(await invDirReady())){ toast('Allow access to the invoice folder to open the file.'); return; }
+  try{
+    var parts=inv.file.split('/'), dir=invDir, i;
+    for(i=0;i<parts.length-1;i++) dir=await dir.getDirectoryHandle(parts[i]);
+    var file=await (await dir.getFileHandle(parts[parts.length-1])).getFile(), url=URL.createObjectURL(file);
+    if(!window.open(url,'_blank')){ var a2=document.createElement('a'); a2.href=url; a2.download=file.name; document.body.appendChild(a2); a2.click(); a2.remove(); }
+    setTimeout(function(){ URL.revokeObjectURL(url); },60000);
+  }catch(e){ toast('File not found in the invoice folder: '+inv.file); }
+}
 async function boot(){
+  try{ invDir=(await idbGet('invdir'))||null; }catch(e){}
   if(!supportsFS){ loaded=true; setStatus(); render(); return; }
   try{
     var h=await idbGet('file');
@@ -515,6 +589,7 @@ window.addEventListener('focus', async function(){
 /* ---------- domain ---------- */
 var unit = function(a){ return a.rateType==='day' ? 'd' : 'h'; };
 var rateLabel = function(a){ return money(a.rate,a.currency)+(a.rateType==='day'?' / day':' / hour'); };
+var subLabel = function(a){ return (a.role ? esc(a.role)+' · ' : '')+esc(rateLabel(a)); }; /* role (if any) and rate, escaped */
 var inRange = function(a,d){ return d>=a.start && (!a.end || d<=a.end); };
 var weekOverlaps = function(a,w){ var we=iso(addDays(parse(w),6)); return a.start<=we && (!a.end || a.end>=w); };
 var defaultWeek = function(a,w){ return weekOverlaps(a,w) ? a.perWeek : 0; };
@@ -645,7 +720,7 @@ function todayCard(a){
     : '<button class="btn primary" data-set="'+key+'|'+a.hoursPerDay+'">Full day ('+a.hoursPerDay+' h)</button>';
   if(q) quick+='<button class="btn" data-set="'+key+'|0">Clear</button>';
   return '<section class="tcard" style="border-left-color:'+a.color+'">'+
-    '<div class="thead"><strong><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</strong><span class="meta">'+esc(rateLabel(a))+'</span></div>'+
+    '<div class="thead"><strong><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</strong><span class="meta">'+subLabel(a)+'</span></div>'+
     '<div class="meta">Planned today: '+(pl?r1(pl)+' '+(isDay?'d':'h'):'nothing')+(b?' · Contract days left: <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div>'+
     '<div class="stepper"><button class="sbtn" data-step="'+a.id+'|-1" aria-label="Less time for '+esc(a.name)+'">−</button>'+
       '<div class="sval num" aria-live="polite">'+(q?fmtN(q):'0')+'<small>'+(isDay?(q===1?'day':'days'):(q===1?'hour':'hours'))+(q?' · '+money(q*a.rate,a.currency):'')+'</small></div>'+
@@ -698,7 +773,7 @@ function renderPlannerMonths(){
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Month</th>'+
     months.map(function(ym){ return '<th class="'+(ym===cur?'now':'')+'"><button class="hlink under" data-pmonth="'+ym+'" title="Open the weeks of '+monthLabel(ym)+'">'+shortMonth(ym)+'</button></th>'; }).join('')+'</tr></thead><tbody>';
   state.assignments.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+'</small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+'</small></th>'+
       months.map(function(ym,mi){
         var v=round2(monthPlanned(a,ym)); tots[mi]+=v;
         var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0;
@@ -728,7 +803,7 @@ function renderPlanner(){
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Week starting</th>'+
     weeks.map(function(w){ return '<th class="'+(w===thisW?'now':'')+'">'+fmtDay(parse(w))+'</th>'; }).join('')+'</tr></thead><tbody>';
   state.assignments.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset row</button></small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+' · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset row</button></small></th>'+
       weeks.map(function(w){
         var v=plannedDays(a,w);
         return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"></td>';
@@ -784,7 +859,7 @@ function renderTimesheet(){
   h+='<div class="scroll"><table class="grid'+(isM?' mgrid':'')+'"><thead><tr><th class="sticky">Client</th>'+
     vd.map(function(d){ var we=(d.getDay()===0||d.getDay()===6), wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':''; return '<th class="'+(iso(d)===todayISO?'now':(we?'we':''))+wk+'">'+(isM?d.toLocaleDateString(LOC(),{weekday:'narrow'}):fmtDow(d))+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Total</th></tr></thead><tbody>';
   rows.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="hlink under" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+' · <button class="hlink under" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
       vd.map(function(d){
         var dI=iso(d), we=(d.getDay()===0||d.getDay()===6), q=state.entries[a.id+'|'+dI]||0, hasNote=!!state.notes[a.id+'|'+dI];
         var wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':'';
@@ -814,6 +889,27 @@ function refreshTimesheetTotals(){
   var ft=$('#ft'); if(ft){ var ks=Object.keys(sums).filter(function(k){ return sums[k]>0; }); ft.textContent = ks.length ? ks.map(function(k){ return money(sums[k],k); }).join('  ·  ') : '—'; }
 }
 
+/* Suggests the next invoice number from the most recent one: INV-012 -> INV-013, FT 2026/12 -> FT 2026/13. */
+/* Suggests the next invoice number from the most recent one, counting up and keeping the format:
+   2026-INV012 -> 2026-INV013, INV-012 -> INV-013, FT 2026/12 -> FT 2026/13. */
+function suggestInvoiceNo(forYm){
+  var best=null, used={};
+  Object.keys(state.invoices).forEach(function(k){
+    var inv=state.invoices[k]; if(!inv || !inv.no) return;
+    used[inv.no]=true;
+    var m=/^(.*?)(\d+)(\D*)$/.exec(inv.no); if(!m) return;
+    var ym=k.split('|')[1], n=parseInt(m[2],10);
+    if(!best || ym>best.ym || (ym===best.ym && n>best.n)) best={ ym:ym, n:n, m:m };
+  });
+  if(!best) return '';
+  var out, m=best.m, width=m[2].length, byear=best.ym.slice(0,4), nyear=forYm ? forYm.slice(0,4) : byear;
+  var next=String(best.n+1);
+  /* A number that contains the year (2026-INV013) starts again at 001 in a new year: 2027-INV001 */
+  if(nyear>byear && m[1].indexOf(byear)>-1){ m=[m[0], m[1].split(byear).join(nyear), '1', m[3]]; next='1'; }
+  while(next.length<width) next='0'+next;
+  out=m[1]+next+m[3];
+  return used[out] ? '' : out;
+}
 function renderIncome(){
   if(!state.assignments.length) return emptyState();
   var cur=ymOf(today);
@@ -845,11 +941,16 @@ function renderIncome(){
     state.assignments.forEach(function(a){
       var s=monthStats(a,ym);
       if(s.L<=0 && s.P<=0 && s.F<=0 && s.R<=0) return;
-      var st=statusOf(s), key=a.id+'|'+ym, sym=({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency));
+      var st=statusOf(s), key=a.id+'|'+ym, sugg=suggestInvoiceNo(ym), sym=({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency));
       addTo(tot,a.currency,s.F); totD+=s.Fd;
       var canFull = s.L>0.004 && s.R<s.L-0.005;
       var invCell = s.L>0.004
-        ? '<input class="inv" data-invno="'+key+'" value="'+esc(s.inv?s.inv.no:'')+'" placeholder="Invoice no." aria-label="Invoice number for '+esc(a.name)+', '+monthLabel(ym)+'"><small><input class="dt" type="date" data-invsent="'+key+'" value="'+esc(s.inv?s.inv.sent:'')+'" aria-label="Invoice sent date for '+esc(a.name)+', '+monthLabel(ym)+'"></small>'
+        ? '<input class="inv" data-invno="'+key+'" value="'+esc(s.inv?s.inv.no:'')+'" placeholder="Invoice no." aria-label="Invoice number for '+esc(a.name)+', '+monthLabel(ym)+'">'+
+          ((!s.inv || !s.inv.no) && sugg ? '<small><button class="hlink under" data-invuse="'+key+'" title="Suggested from your last invoice number">Use '+esc(sugg)+'</button></small>' : '')+
+          '<small><input class="dt" type="date" data-invsent="'+key+'" value="'+esc(s.inv?s.inv.sent:'')+'" aria-label="Invoice sent date for '+esc(a.name)+', '+monthLabel(ym)+'"></small>'+
+          (s.inv && s.inv.file
+            ? '<small><button class="hlink under" data-invopen="'+key+'" title="'+esc(s.inv.file)+'">Open invoice file</button> · <button class="hlink under" data-invdetach="'+key+'">Remove link</button></small>'
+            : (supportsDir ? '<small><button class="btn small" data-invattach="'+key+'">Attach invoice</button></small>' : ''))
         : '—';
       rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td>'+
         '<td class="num">'+(s.qty?round2(s.qty)+' '+unit(a):'—')+'<small>'+(s.L?money(s.L,a.currency):'')+'</small></td>'+
@@ -985,7 +1086,7 @@ function renderReports(){
   var rows='';
   active.forEach(function(a){
     var s=R.per[a.id];
-    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'<small>'+esc(rateLabel(a))+'</small></td>'+
+    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'<small>'+subLabel(a)+'</small></td>'+
       '<td class="num">'+(s.qty?r1(round2(s.qty))+' '+unit(a):'—')+'</td><td class="num">'+r1(round2(s.deq))+'</td><td class="num">'+r1(round2(s.planned))+'</td>'+
       '<td class="num">'+money(s.earned,a.currency)+'</td><td class="num">'+(s.received?money(s.received,a.currency):'—')+'</td></tr>';
   });
@@ -1021,10 +1122,10 @@ function exportReportCSV(){
   var fname = repFilter==='all' ? 'All' : byId(repFilter).name;
   row(['Solo Planner report', R.P.label]); row(['From', R.f]); row(['To', R.t]); row(['Clients', fname]); row(['Working days (Mon-Fri)', R.work]); row([]);
   row(['Summary']);
-  row(['Client','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
+  row(['Client','Role','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
   R.as.forEach(function(a){
     var s=R.per[a.id]; if(!(s.qty || s.planned>0.004 || s.received)) return;
-    row([a.name, a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
+    row([a.name, a.role||'', a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
   });
   row([]); row(['Detail']);
   row(['Date','Weekday','Client','Quantity','Unit','Day equivalent','Hours','Rate','Currency','Amount','Note']);
@@ -1051,6 +1152,8 @@ function renderAssignments(){
     h+='<form class="f af card" id="aform" novalidate><h3 style="margin-bottom:14px">'+(a?'Edit client':'New client')+'</h3>'+
     '<div class="grp" role="group" aria-labelledby="g1"><h4 class="gt" id="g1" style="margin:0">Client</h4>'+
       '<label>Name<input id="f-name" required value="'+esc(v.name)+'" placeholder="Client or project"><span class="ferr" id="e-name" role="alert"></span></label>'+
+      '<label>Role or type of work<input id="f-role" value="'+esc(v.role||'')+'" placeholder="e.g. Senior data analyst"><span class="help">Optional. Shown next to the rate in the lists.</span></label>'+
+      '<label class="wide">Description<textarea id="f-desc" rows="3" placeholder="Scope, deliverables, contacts, anything you want to remember">'+esc(v.description||'')+'</textarea><span class="help">Optional. Shown in the client list.</span></label>'+
       '<label>Color<input type="color" id="f-color" value="'+esc(v.color||COLORS[state.assignments.length % COLORS.length])+'"><span class="help">Used in every view.</span></label></div>'+
     '<div class="grp" role="group" aria-labelledby="g2"><h4 class="gt" id="g2" style="margin:0">Billing</h4>'+
       '<label>Billing<select id="f-type"><option value="day"'+(v.rateType==='day'?' selected':'')+'>Day rate</option><option value="hour"'+(v.rateType==='hour'?' selected':'')+'>Hourly rate</option></select></label>'+
@@ -1069,8 +1172,9 @@ function renderAssignments(){
   }
   h+='<div class="alist">'+state.assignments.map(function(x){
     var b=bankAt(x,iso(monday(today))), logged=usedBetween(x,'0000-01-01',todayISO);
-    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+esc(rateLabel(x))+' · '+fmtDayY(parse(x.start))+' to '+(x.end?fmtDayY(parse(x.end)):'open-ended')+' · pays in '+x.terms+' days</div>'+
-      '<div class="meta">Plan '+r1(x.perWeek)+' d/week · Logged '+r1(round2(logged))+' d'+(b?' · Contract days left <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div></div>'+
+    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+subLabel(x)+' · '+fmtDayY(parse(x.start))+' to '+(x.end?fmtDayY(parse(x.end)):'open-ended')+' · pays in '+x.terms+' days</div>'+
+      '<div class="meta">Plan '+r1(x.perWeek)+' d/week · Logged '+r1(round2(logged))+' d'+(b?' · Contract days left <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div>'+
+      (x.description?'<div class="desc">'+esc(x.description).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
       '<div class="ctl"><button class="btn small" data-edit="'+x.id+'">Edit</button><button class="btn small danger" data-del="'+x.id+'">Delete</button></div></div>';
   }).join('')+'</div>';
   h+='<section class="card" style="margin-top:24px"><h3 style="margin-bottom:10px">Settings</h3><form class="f" id="sform" novalidate>'+
@@ -1078,6 +1182,7 @@ function renderAssignments(){
     '<label>Date and number format<select id="s-loc">'+LOCALES.map(function(l){ return '<option value="'+l[0]+'"'+(LOC()===l[0]?' selected':'')+'>'+l[1]+'</option>'; }).join('')+'</select><span class="help">Weeks start on Monday.</span></label>'+
     '<label class="chk"><input type="checkbox" id="s-hw"'+(state.settings.hideWeekends?' checked':'')+'> Hide weekends in Today and Timesheet</label></form></section>';
   h+='<section class="card" style="margin-top:16px"><h3>Data file</h3><p class="hint">'+(connected?'Saving to <strong>'+esc(fileName)+'</strong>. Keep it in a cloud-synced folder.':'Not connected to a file.')+'</p><div class="ctl">'+(supportsFS?'<button class="btn small" data-act="fs-switch">Switch file</button>':'')+'<button class="btn small" data-act="export">Export copy</button><button class="btn small" data-act="import">Import…</button></div></section>';
+  if(supportsDir) h+='<section class="card" style="margin-top:16px"><h3>Invoice folder</h3><p class="hint">'+(invDir?'Invoices are copied to <strong>'+esc(invDir.name)+'</strong>, organised as <em>Year / Month / InvoiceNo_Client_YYYY-MM.pdf</em>, for example <em>2026/10/2026-INV001_Wrangu-Barclays_2026-10.pdf</em>. The year and month are the month the invoice covers. Use the number exactly as it appears on the invoice.':'Choose a folder (for example inside OneDrive) where invoice files are copied when you attach them in the Income tab. Files are organised as <em>Year / Month / InvoiceNo_Client_YYYY-MM.pdf</em>.')+'</p><div class="ctl"><button class="btn small" data-act="inv-folder">'+(invDir?'Change folder':'Choose folder')+'</button></div></section>';
   h+=pwCardHTML();
   if(state.assignments.length) h+='<div style="margin-top:24px" class="ctl"><button class="btn small danger" data-act="clear">Clear all data</button></div>';
   return h;
@@ -1268,6 +1373,27 @@ document.addEventListener('click', function(e){
     for(i2=0;i2<14;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; }
     changed(); render(); toast('Planned days reset to the default', snapR);
   }
+  else if(act==='inv-folder'){
+    (async function(){ if(await pickInvDir()){ render(); toast('Invoice folder set to '+invDir.name); } })();
+  }
+  else if(t.hasAttribute('data-invattach')){
+    var iak=t.getAttribute('data-invattach'), iar=state.invoices[iak];
+    if(!iar || !iar.no){ toast('Enter the invoice number first. It is part of the file name.'); return; }
+    (async function(){
+      if(!invDir){ if(await pickInvDir()){ render(); toast('Invoice folder set. Select Attach invoice again.'); } return; }
+      if(!(await invDirReady())){ toast('Allow access to the invoice folder to continue.'); return; }
+      pendingInv=iak; var fi=$('#invfile'); fi.value=''; fi.click();
+    })();
+  }
+  else if(t.hasAttribute('data-invuse')){
+    var uk=t.getAttribute('data-invuse'), us=suggestInvoiceNo(uk.split('|')[1]);
+    if(us){ var uc=state.invoices[uk] || { no:'', sent:'' }; uc.no=us; state.invoices[uk]=uc; changed(); renderKeepFocus(); if(uc.file) renameInvoiceFile(uk); }
+  }
+  else if(t.hasAttribute('data-invopen')){ openInvoice(t.getAttribute('data-invopen')); }
+  else if(t.hasAttribute('data-invdetach')){
+    var idk=t.getAttribute('data-invdetach'), snapD=snapshot();
+    if(state.invoices[idk]){ delete state.invoices[idk].file; changed(); render(); toast('Link removed. The file itself was not deleted.', snapD); }
+  }
   else if(t.hasAttribute('data-fill')){ var snapF=snapshot(); fillFromPlan(t.getAttribute('data-fill'), weekDays()); changed(); render(); toast('Filled from plan', snapF); }
   else if(t.hasAttribute('data-tfillweek')){
     var wdays=[], wi; for(wi=0;wi<7;wi++) wdays.push(addDays(monday(today),wi));
@@ -1322,8 +1448,10 @@ document.addEventListener('change', function(e){
     var ik=t.getAttribute('data-invno') || t.getAttribute('data-invsent');
     var ci=state.invoices[ik] || { no:'', sent:'' };
     if(t.hasAttribute('data-invno')) ci.no=t.value.trim(); else ci.sent=t.value;
-    if(!ci.no && !ci.sent) delete state.invoices[ik]; else state.invoices[ik]=ci;
-    changed(); renderKeepFocus();
+    if(!ci.no && !ci.sent && !ci.file) delete state.invoices[ik]; else state.invoices[ik]=ci;
+    changed();
+    if(t.hasAttribute('data-invno') && state.invoices[ik] && state.invoices[ik].file) renameInvoiceFile(ik);
+    if(t.hasAttribute('data-invsent')) renderKeepFocus(); /* the invoice number needs no redraw, so a click on the next button is not lost */
   } else if(t.id==='t-month'){
     if(!/^\d{4}-\d{2}$/.test(t.value)) return;
     if(tsMode==='month') tsMonth=t.value; else weekAnchor=firstWeekOf(t.value);
@@ -1345,6 +1473,12 @@ document.addEventListener('change', function(e){
   } else if(t.id==='f-type'){
     var hw=$('#hpd-wrap'); if(hw) hw.hidden = (t.value!=='hour');
   }
+});
+
+document.addEventListener('change', function(e){
+  var t=e.target; if(t.id!=='invfile' || !t.files || !t.files[0] || !pendingInv) return;
+  var f=t.files[0], key=pendingInv; pendingInv=null; t.value='';
+  attachInvoice(key,f);
 });
 
 document.addEventListener('change', function(e){
@@ -1373,7 +1507,7 @@ document.addEventListener('submit', function(e){
   if(end && start && end<start) errs.push(['end','The end date is before the start date.']);
   if(amode!=='none' && adays<=0) errs.push(['adays','Enter how many contract days the client gave you.']);
   if(errs.length){ errs.forEach(function(x){ fieldErr(x[0],x[1]); }); var first=$('#f-'+errs[0][0]); if(first) first.focus(); return; }
-  var rec={ allowMode:amode, allowDays:amode==='none'?0:adays, name:name, rateType:$('#f-type').value, rate:rate, currency:$('#f-cur').value, start:start, end:end,
+  var rec={ allowMode:amode, allowDays:amode==='none'?0:adays, name:name, role:$('#f-role').value.trim(), description:$('#f-desc').value.trim(), rateType:$('#f-type').value, rate:rate, currency:$('#f-cur').value, start:start, end:end,
     color:$('#f-color').value, perWeek:Math.min(7,Math.max(0,num($('#f-pw').value))), hoursPerDay:Math.min(24,Math.max(1,num($('#f-hpd').value)||8)), terms:Math.max(0,Math.round(num($('#f-terms').value))) };
   if(editing){
     var a=byId(editing);
