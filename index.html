@@ -32,18 +32,20 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-body);-webkit-text-size-adjust:100%}
 h1,h2,h3{margin:0;text-wrap:balance;font-weight:600}
 h2{font-size:20px}
 h3{font-size:15px}
-button,input,select{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 16px 48px}
-header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:18px 0 10px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 80px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:18px 0 10px}
 header.top h1{font-size:18px;letter-spacing:.01em}
+.hdate{font-size:13px;color:var(--muted)}
 #status{margin-left:auto;font-size:12px;color:var(--muted);font-family:var(--font-num)}
-#status.err{color:var(--crit)}
+#status.err{color:var(--crit);background:var(--crit-soft);padding:3px 10px;border-radius:99px;font-weight:600}
 nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:20px}
 .tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
 .tab[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -70,7 +72,7 @@ th.rowh small{grid-column:2;color:var(--muted);font-weight:400;font-size:12px}
 .now{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
 thead th.now{color:var(--accent);font-weight:600}
 .we{background:color-mix(in srgb,var(--muted) 8%,var(--surface))}
-input.cell{width:58px;text-align:center;font-family:var(--font-num);border:1px solid transparent;border-radius:6px;padding:6px 2px;background:transparent}
+input.cell{width:58px;text-align:center;font-family:var(--font-num);border:1px solid transparent;border-radius:6px;padding:8px 2px;background:transparent}
 input.cell:hover{border-color:var(--line)}
 input.cell:focus{border-color:var(--accent);background:var(--surface)}
 input.cell.l1{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
@@ -80,13 +82,15 @@ input.cell.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
 input.cell.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 table.grid td{position:relative}
-.x{position:absolute;top:1px;right:1px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;opacity:.6}
-.x:hover{color:var(--crit);opacity:1}
-.nb{position:absolute;bottom:1px;right:1px;border:0;background:none;cursor:pointer;color:var(--muted);font-size:12px;opacity:.45;padding:2px 4px;line-height:1}
-.nb:hover{opacity:1}
+/* Cell actions: 24px targets in the corners, readable at rest */
+.x,.nb{position:absolute;right:0;width:24px;height:24px;border:0;background:none;cursor:pointer;color:var(--muted);line-height:1;padding:0;display:grid;place-items:center;border-radius:6px}
+.x{top:0;font-size:17px;opacity:.8}
+.nb{bottom:0;font-size:14px;opacity:.75}
+.x:hover{color:var(--crit);opacity:1;background:var(--crit-soft)}
+.nb:hover{opacity:1;background:var(--accent-soft)}
 .nb.on{color:var(--accent);opacity:1}
 tr.noterow td,tr.noterow th{background:color-mix(in srgb,var(--accent) 6%,var(--surface));text-align:left;white-space:normal}
-.noterow textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical}
+.noterow textarea,.tcard textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical}
 .noterow label{display:grid;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
 .nline{margin:8px 0;font-size:14px}
 td.tot small{display:block;color:var(--muted);font-size:11px}
@@ -100,6 +104,8 @@ tr.sum th,tr.sum td{background:color-mix(in srgb,var(--muted) 6%,var(--surface))
 .tile.crit{border-color:var(--crit)}
 .tile.crit .v{color:var(--crit)}
 .tile small{display:block;color:var(--muted);margin-top:4px}
+.meter{height:6px;border-radius:99px;background:color-mix(in srgb,var(--muted) 18%,var(--surface));margin-top:8px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--accent);border-radius:99px}
 .month{margin-bottom:20px}
 .month h3{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .month h3 .mt{font-family:var(--font-num);font-weight:400;color:var(--muted);font-size:13px}
@@ -109,9 +115,11 @@ table.inc th:first-child,table.inc td:first-child{text-align:left}
 table.inc thead th{font-size:12px;font-weight:500;color:var(--muted)}
 table.inc tbody tr:last-child td{border-bottom:0}
 table.inc td small{display:block;color:var(--muted);font-size:11px}
+table.inc td small .btn{margin-top:4px}
 .amtwrap{display:inline-flex;align-items:center;gap:4px}
 .amtwrap .cur{color:var(--muted)}
 input.amt{width:92px;text-align:right;font-family:var(--font-num);border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface)}
+input.inv{width:104px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);text-align:right}
 input.dt{width:128px;border:1px solid var(--line);border-radius:6px;padding:2px 4px;font-size:12px;background:var(--surface)}
 .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
 .pill.good{background:var(--good-soft);color:var(--good)}
@@ -122,7 +130,18 @@ input.dt{width:128px;border:1px solid var(--line);border-radius:6px;padding:2px 
 form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
 form.f label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
 form.f input,form.f select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink)}
+form.f input[type=checkbox]{width:18px;height:18px;padding:0}
+form.f label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+form#sform{align-items:start}
+form#sform label.chk{margin-top:26px;min-height:38px}
+form.f input[aria-invalid="true"],form.f select[aria-invalid="true"]{border-color:var(--crit)}
 form.f .row{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+form.af{display:block}
+form.af .grp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 14px;align-items:start;margin-bottom:20px}
+form.af .gt{grid-column:1/-1;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:4px}
+.help{font-weight:400;color:var(--muted);font-size:12px}
+.ferr{color:var(--crit);font-size:12px;font-weight:500}
+.ferr:empty{display:none}
 .err{color:var(--crit);font-size:13px}
 .alist{display:grid;gap:10px;margin-top:18px}
 .arow{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
@@ -137,9 +156,10 @@ form.f .row{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:cen
 @media (max-width:600px){
   th.sticky{min-width:120px}
   input.cell{width:48px}
+  .tab{padding:10px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-body.locked nav.tabs,body.locked #status,body.locked #banner,body.locked #lockbtn,body.locked #eyebtn{display:none!important}
+body.locked nav.tabs,body.locked #status,body.locked #banner,body.locked #lockbtn,body.locked #eyebtn,body.locked #hdate,body.locked #toast{display:none!important}
 dialog#confirm{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:20px 22px;width:calc(100% - 32px);max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 dialog#confirm::backdrop{background:rgba(10,16,22,.5)}
 dialog#confirm p{color:var(--muted);margin:8px 0 18px}
@@ -169,6 +189,7 @@ details.menu .pop button{border:0;background:none;text-align:left;padding:8px 10
 details.menu .pop button:hover{background:var(--accent-soft)}
 .hlink{border:0;background:none;padding:2px 4px;cursor:pointer;color:inherit;font:inherit;border-radius:4px}
 .hlink:hover{color:var(--accent);text-decoration:underline}
+.hlink.under{text-decoration:underline dotted;text-underline-offset:3px}
 button.pm{min-width:52px;border:1px solid transparent;border-radius:6px;padding:6px 4px;background:transparent;cursor:pointer;font-family:var(--font-num);color:var(--ink)}
 button.pm:hover{border-color:var(--accent)}
 button.pm.l0{color:var(--muted)}
@@ -177,6 +198,13 @@ button.pm.l2{background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
 button.pm.l3{background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
 button.pm.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
 button.pm.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
+.legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:0 0 10px}
+.legend i{display:inline-block;width:22px;height:12px;border-radius:3px}
+.legend i:nth-of-type(1){background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.legend i:nth-of-type(2){background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
+.legend i:nth-of-type(3){background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
+.legend i:nth-of-type(4){background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
+.legend i:nth-of-type(5){background:color-mix(in srgb,var(--accent) 66%,var(--surface))}
 .tfoot{display:flex;justify-content:flex-end;margin-top:8px}
 input.mask{-webkit-text-security:disc}
 #eyebtn{display:inline-flex;align-items:center;gap:6px}
@@ -188,12 +216,45 @@ select.sel{border:1px solid var(--line);border-radius:6px;padding:6px 10px;backg
 .rsec h3{margin-bottom:8px}
 table.inc td.note{text-align:left;white-space:normal;min-width:220px;max-width:480px}
 table.inc tr.rtot td{font-weight:600;background:color-mix(in srgb,var(--muted) 6%,var(--surface))}
+/* Today view: big targets, one card per client */
+.tcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-bottom:22px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:16px;display:grid;gap:12px}
+.tcard .thead{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;justify-content:space-between}
+.tcard .meta{color:var(--muted);font-size:13px}
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px}
+.sbtn{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:26px;line-height:1;cursor:pointer;font-weight:500;display:grid;place-items:center}
+.sbtn:hover{border-color:var(--accent)}
+.sval{font-size:30px;font-weight:500;min-width:5.5em;text-align:center;line-height:1.1}
+.sval small{display:block;font-size:13px;color:var(--muted);font-weight:400;font-family:var(--font-body)}
+.tact{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tact .btn{min-height:40px;padding:6px 14px}
+.dbtn{min-width:46px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-family:var(--font-num);font-size:15px}
+.dbtn:hover{border-color:var(--accent)}
+.dbtn.on{background:color-mix(in srgb,var(--accent) 26%,var(--surface));border-color:var(--accent)}
+.dbtn.full{background:color-mix(in srgb,var(--accent) 60%,var(--surface));color:var(--accent-ink)}
+.check ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.check li.done{color:var(--muted)}
+.check li span{display:inline-block;width:1.4em}
+.check li.done span{color:var(--good)}
+.check{margin-bottom:18px}
+/* Toast with undo */
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:10px;display:flex;gap:12px;align-items:center;z-index:50;box-shadow:0 8px 28px rgba(0,0,0,.3);max-width:calc(100% - 32px)}
+#toast .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 50%,transparent)}
+#toast .tx{border:0;background:none;color:var(--bg);font-size:20px;line-height:1;cursor:pointer;opacity:.8;padding:0 4px}
+/* Report chart */
+svg.ch{width:100%;height:auto;display:block}
+svg.ch text{fill:var(--muted);font:11px var(--font-num)}
+svg.ch text.vl{fill:var(--ink)}
+svg.ch .gl{stroke:var(--line);stroke-width:1}
+svg.ch .cbar{stroke:var(--surface);stroke-width:2;paint-order:stroke}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px}
+details.past>summary{cursor:pointer;font-weight:600;font-size:18px;margin:28px 0 12px}
 @media print{
   :root,:root[data-theme="dark"],:root:not([data-theme="light"]){
     --bg:#ffffff; --surface:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#dde3e8;
     --accent:#0e6b66; --accent-ink:#ffffff; --accent-soft:#dff1ef; color-scheme:light;
   }
-  header.top,nav.tabs,#banner,.noprint{display:none!important}
+  header.top,nav.tabs,#banner,#toast,.noprint{display:none!important}
   body{background:#fff;font-size:12px}
   .wrap{max-width:none;padding:0}
   .scroll{overflow:visible;border:0}
@@ -206,21 +267,24 @@ table.inc tr.rtot td{font-weight:600;background:color-mix(in srgb,var(--muted) 6
 <div class="wrap">
   <header class="top">
     <h1>Solo Planner</h1>
+    <span class="hdate" id="hdate"></span>
     <span id="status" role="status" aria-live="polite"></span>
     <button class="btn small" id="eyebtn" data-act="eye"></button>
-    <button class="btn small" id="lockbtn" data-act="lock">Lock</button>
+    <button class="btn small" id="lockbtn" data-act="lock" hidden>Lock</button>
   </header>
   <div id="banner"></div>
   <input type="file" id="impfile" accept=".json,application/json" hidden>
   <nav class="tabs" aria-label="Sections">
+    <button class="tab" data-view="today">Today</button>
     <button class="tab" data-view="planner">Planner</button>
     <button class="tab" data-view="timesheet">Timesheet</button>
     <button class="tab" data-view="income">Income</button>
     <button class="tab" data-view="reports">Reports</button>
-    <button class="tab" data-view="assignments">Assignments</button>
+    <button class="tab" data-view="assignments">Clients</button>
   </nav>
   <main id="main"></main>
 </div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="confirm" aria-labelledby="cf-title" aria-describedby="cf-msg">
   <h3 id="cf-title"></h3>
   <p id="cf-msg"></p>
@@ -243,30 +307,42 @@ var todayISO = iso(today);
 var ymOf = function(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1); };
 var uid = function(){ return Math.random().toString(36).slice(2,9); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
-var masked = (function(){ try{ return sessionStorage.getItem('solo-planner-show')!=='1'; }catch(e){ return true; } })();
-function setMasked(on){ masked=on; try{ if(on) sessionStorage.removeItem('solo-planner-show'); else sessionStorage.setItem('solo-planner-show','1'); }catch(e){} }
-var curSym = function(cur){ try{ var p=new Intl.NumberFormat('en-GB',{style:'currency',currency:cur}).formatToParts(0).filter(function(x){ return x.type==='currency'; })[0]; return p?p.value:cur+' '; }catch(e){ return cur+' '; } };
+var LS = {
+  get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  del:function(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+/* "Hide amounts" is remembered in this browser. It is visible by default. */
+var masked = LS.get('solo-planner-mask')==='1';
+function setMasked(on){ masked=on; if(on) LS.set('solo-planner-mask','1'); else LS.del('solo-planner-mask'); }
+
+/* ---------- state ---------- */
+var DEFAULTS = { capacity:5, hideWeekends:false, locale:'en-GB' };
+var state = { v:1, assignments:[], plan:{}, entries:{}, payments:{}, notes:{}, invoices:{}, settings:Object.assign({},DEFAULTS) };
+var LOC = function(){ return state.settings.locale || 'en-GB'; };
+var CAP = function(){ var c=state.settings.capacity; return c>0 ? c : 5; };
+var byId = function(id){ return state.assignments.filter(function(x){ return x.id===id; })[0]; };
+
+var curSym = function(cur){ try{ var p=new Intl.NumberFormat(LOC(),{style:'currency',currency:cur}).formatToParts(0).filter(function(x){ return x.type==='currency'; })[0]; return p?p.value:cur+' '; }catch(e){ return cur+' '; } };
 var mk = function(){ return masked?' mask':''; };
-var money = function(v,cur){ if(masked) return curSym(cur)+'••••'; try{ return new Intl.NumberFormat('en-GB',{style:'currency',currency:cur,minimumFractionDigits:0,maximumFractionDigits:2}).format(v); }catch(e){ return cur+' '+v.toFixed(2); } };
+var money = function(v,cur){ if(masked) return curSym(cur)+'••••'; try{ return new Intl.NumberFormat(LOC(),{style:'currency',currency:cur,minimumFractionDigits:0,maximumFractionDigits:2}).format(v); }catch(e){ return cur+' '+v.toFixed(2); } };
 var num = function(v){ var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:0; };
 var fmtN = function(v){ return v ? String(Math.round(v*100)/100) : ''; };
 var round2 = function(v){ return Math.round(v*100)/100; };
-var fmtDay = function(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); };
-var fmtDow = function(d){ return d.toLocaleDateString('en-GB',{weekday:'short'}); };
-var monthLabel = function(ym){ var p=ym.split('-').map(Number); return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'}); };
+var fmtDay = function(d){ return d.toLocaleDateString(LOC(),{day:'numeric',month:'short'}); };
+var fmtDayY = function(d){ return fmtDay(d)+' '+d.getFullYear(); };
+var fmtDow = function(d){ return d.toLocaleDateString(LOC(),{weekday:'short'}); };
+var monthLabel = function(ym){ var p=ym.split('-').map(Number); return new Date(p[0],p[1]-1,1).toLocaleDateString(LOC(),{month:'long',year:'numeric'}); };
 var COLORS = ['#0e6b66','#7c4dbd','#c2570c','#1f6fb2','#a1306b','#5c7a1f','#b3261e','#8a6d00','#37474f','#00838f'];
 
-/* ---------- state ---------- */
-var state = { v:1, assignments:[], plan:{}, entries:{}, payments:{}, notes:{} };
-var view = 'planner';
+var view = 'today';
 var plannerStart = addDays(monday(today), -7);
-var plMode = 'week';                                  // Planner view: 'week' or 'month'
-var plMonthStart = ymOf(new Date(today.getFullYear(), today.getMonth()-1, 1)); // first month shown in month view
+var plMode = 'week';
+var plMonthStart = ymOf(new Date(today.getFullYear(), today.getMonth()-1, 1));
 var weekAnchor = monday(today);
-var tsMode = 'week';          // Timesheet view: 'week' or 'month'
-var tsMonth = ymOf(today);    // month shown in month view (YYYY-MM)
-var editing = null;
-/* One confirmation dialog for every action that deletes or replaces data. Cancel has focus by default. */
+var tsMode = 'week';
+var tsMonth = ymOf(today);
+var editing = null, showForm = false, pastOpen = false;
 var pendingConfirm = null;
 function askConfirm(title, msg, yesLabel, fn){
   var dlg=$('#confirm');
@@ -275,7 +351,7 @@ function askConfirm(title, msg, yesLabel, fn){
   if(dlg.showModal){ if(!dlg.open) dlg.showModal(); }
   else if(window.confirm(title+'\n\n'+msg)){ pendingConfirm=null; fn(); }
 }
-$('#confirm').addEventListener('close', function(){ pendingConfirm=null; }); // Esc cancels
+$('#confirm').addEventListener('close', function(){ pendingConfirm=null; });
 function closeConfirm(run){
   var fn=pendingConfirm, dlg=$('#confirm'); pendingConfirm=null;
   if(dlg.open) dlg.close();
@@ -285,12 +361,22 @@ var noteKey = null;
 var repType = 'month', repAnchor = new Date(today), repFilter = 'all';
 var loaded = false;
 
-/* ---------- password lock (screen lock only; the data file itself is not encrypted) ---------- */
+/* ---------- undo toast ---------- */
+var toastTimer = null, undoSnap = null;
+function snapshot(){ return JSON.stringify({ assignments:state.assignments, plan:state.plan, entries:state.entries, payments:state.payments, notes:state.notes, invoices:state.invoices, settings:state.settings }); }
+function hideToast(){ var el=$('#toast'); el.hidden=true; undoSnap=null; clearTimeout(toastTimer); }
+function toast(msg, snap){
+  var el=$('#toast'); undoSnap=snap||null;
+  el.innerHTML='<span>'+esc(msg)+'</span>'+(snap?'<button class="btn small" data-act="undo">Undo</button>':'')+'<button class="tx" data-act="toast-close" aria-label="Dismiss">×</button>';
+  el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(hideToast, snap?8000:3500);
+}
+
+/* ---------- optional password lock (screen lock only; the data file itself is not encrypted) ---------- */
 var PWKEY = 'solo-planner-pw', SESSKEY = 'solo-planner-unlocked';
 var pwChange = false;
 function pwGet(){ try{ return JSON.parse(localStorage.getItem(PWKEY)||'null'); }catch(e){ return null; } }
 function pwPut(o){ try{ localStorage.setItem(PWKEY, JSON.stringify(o)); return true; }catch(e){ return false; } }
-var locked = (function(){ try{ return !(pwGet() && sessionStorage.getItem(SESSKEY)==='1'); }catch(e){ return true; } })();
+var locked = (function(){ try{ return !!pwGet() && sessionStorage.getItem(SESSKEY)!=='1'; }catch(e){ return false; } })();
 function setUnlocked(on){ locked=!on; try{ if(on) sessionStorage.setItem(SESSKEY,'1'); else sessionStorage.removeItem(SESSKEY); }catch(e){} }
 function hex(buf){ return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join(''); }
 async function hashPw(pw,salt){
@@ -307,18 +393,20 @@ async function hashPw(pw,salt){
 async function pwCheck(pw){ var o=pwGet(); if(!o) return false; return (await hashPw(pw,o.salt))===o.hash; }
 async function pwSet(pw){ var salt=hex(crypto.getRandomValues(new Uint8Array(16)).buffer); return pwPut({ salt:salt, hash:await hashPw(pw,salt) }); }
 function renderLock(){
-  if(!pwGet()) return '<section class="card empty"><h2>Set a password</h2><p>You will enter it each time you open Solo Planner in this browser.</p>'+
-    '<form class="f lockf" id="lockform" data-mode="set" novalidate>'+
-    '<label>Password<input type="password" id="pw1" autocomplete="new-password" required></label>'+
-    '<label>Repeat password<input type="password" id="pw2" autocomplete="new-password" required></label>'+
-    '<div class="row"><button class="btn primary" type="submit">Set password</button></div><span class="err" id="pw-err" role="alert"></span></form></section>';
   return '<section class="card empty"><h2>Solo Planner is locked</h2><p>Enter your password to continue.</p>'+
-    '<form class="f lockf" id="lockform" data-mode="login" novalidate>'+
+    '<form class="f lockf" id="lockform" novalidate>'+
     '<label>Password<input type="password" id="pw1" autocomplete="current-password" required></label>'+
     '<div class="row"><button class="btn primary" type="submit">Unlock</button></div><span class="err" id="pw-err" role="alert"></span></form></section>';
 }
 function pwCardHTML(){
-  if(!pwChange) return '<section class="card" style="margin-top:16px"><h3>Password</h3><p class="hint">The password locks this page in this browser. It does not encrypt the data file.</p><div class="ctl"><button class="btn small" data-act="pw-change">Change password</button><button class="btn small" data-act="lock">Lock now</button></div></section>';
+  if(!pwGet()){
+    if(!pwChange) return '<section class="card" style="margin-top:16px"><h3>Password (optional)</h3><p class="hint">Lock this page with a password each time you open it in this browser. It does not encrypt the data file.</p><div class="ctl"><button class="btn small" data-act="pw-change">Set a password</button></div></section>';
+    return '<section class="card" style="margin-top:16px"><h3>Set a password</h3><form class="f" id="pwsetform" novalidate>'+
+      '<label>New password<input type="password" id="pwn1" autocomplete="new-password"></label>'+
+      '<label>Repeat password<input type="password" id="pwn2" autocomplete="new-password"></label>'+
+      '<div class="row"><button class="btn primary" type="submit">Save password</button><button class="btn" type="button" data-act="pw-cancel">Cancel</button><span class="err" id="pwc-err" role="alert"></span></div></form></section>';
+  }
+  if(!pwChange) return '<section class="card" style="margin-top:16px"><h3>Password</h3><p class="hint">The password locks this page in this browser. It does not encrypt the data file.</p><div class="ctl"><button class="btn small" data-act="pw-change">Change password</button><button class="btn small" data-act="lock">Lock now</button><button class="btn small danger" data-act="pw-remove">Remove password</button></div></section>';
   return '<section class="card" style="margin-top:16px"><h3>Change password</h3><form class="f" id="pwform" novalidate>'+
     '<label>Current password<input type="password" id="pwc" autocomplete="current-password"></label>'+
     '<label>New password<input type="password" id="pwn1" autocomplete="new-password"></label>'+
@@ -338,17 +426,18 @@ function idbSet(k,v){ return idb().then(function(db){ return new Promise(functio
 
 function setStatus(){
   var el=$('#status'), t='', err=false;
-  if(!supportsFS){ t='Memory only. Use Export to keep your data.'; err=true; }
+  if(!supportsFS){ t='Not saved to a file · use Export'; err=true; }
   else if(!connected){ t=''; }
   else if(persist==='dirty'){ t=fileName+' · unsaved changes…'; }
   else if(persist==='saving'){ t=fileName+' · saving…'; }
   else if(persist==='saved'){ t=fileName+' · saved'; }
   else if(persist==='conflict'){ t=fileName+' · changed elsewhere'; err=true; }
-  else if(persist==='error'){ t='Could not write '+fileName+'. Edit again to retry, or reconnect the file.'; err=true; }
+  else if(persist==='error'){ t='Could not save '+fileName; err=true; }
   el.textContent=t; el.className=err?'err':'';
 }
 function applyData(d){
-  state.assignments=d.assignments||[]; state.plan=d.plan||{}; state.entries=d.entries||{}; state.payments=d.payments||{}; state.notes=d.notes||{};
+  state.assignments=d.assignments||[]; state.plan=d.plan||{}; state.entries=d.entries||{}; state.payments=d.payments||{}; state.notes=d.notes||{}; state.invoices=d.invoices||{};
+  state.settings=Object.assign({},DEFAULTS,d.settings||{});
 }
 function serialize(){ return JSON.stringify(Object.assign({ savedAt:new Date().toISOString() }, state), null, 1); }
 async function readFromHandle(){
@@ -383,7 +472,7 @@ async function flush(force){
     await w.write(out); await w.close();
     lastText=out; persist='saved';
   }catch(e){ persist='error'; }
-  saving=false; setStatus();
+  saving=false; setStatus(); if(persist==='error') render();
   if(again){ again=false; flush(false); }
 }
 async function boot(){
@@ -452,7 +541,13 @@ function usedBetween(a,from,to){
   var t=0; Object.keys(state.entries).forEach(function(k){ var p=k.split('|'); if(p[0]===a.id && p[1]>=from && p[1]<=to) t+=state.entries[k]; });
   return dayEq(a,t);
 }
-/* Days bank. Allowance is set per assignment: per week, per month (unused days roll over, no expiry) or one total pot. */
+function setEntry(a,dI,v){
+  var k=a.id+'|'+dI, max=a.rateType==='day'?1:24;
+  v=Math.min(max,Math.max(0,round2(v)));
+  if(v) state.entries[k]=v; else delete state.entries[k];
+  changed();
+}
+/* Contract days left. Set per client: per week, per month (unused days roll over, no expiry) or one total pot. */
 function bankAt(a,w){
   var mode=a.allowMode||'none', n=a.allowDays||0; if(mode==='none' || n<=0) return null;
   var wEnd=iso(addDays(parse(w),6)), k;
@@ -479,8 +574,8 @@ function bankHTML(){
     var basis=b.mode==='week'?'this week':(b.mode==='month'?'this month':'total pot');
     rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td><td>'+basis+'</td><td class="num">'+(b.carried===null?'—':r1(b.carried))+'</td><td class="num">'+r1(b.allow)+'</td><td class="num">'+r1(b.used)+'</td><td class="num'+(b.balance<-0.004?' over':'')+'"><strong>'+r1(b.balance)+'</strong></td></tr>';
   });
-  if(!rows) return '<p class="foot" style="margin:0">No day allowance set. Edit an assignment in the Assignments tab to track days left and rollover.</p>';
-  return '<h3 style="margin-bottom:8px">Days bank up to '+fmtDay(addDays(parse(w),6))+' '+addDays(parse(w),6).getFullYear()+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Basis</th><th>Carried in</th><th>Allowance</th><th>Used</th><th>Days left</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="foot" style="margin:8px 0 0">Unused days roll over to later periods with no expiry. A negative number means you used more days than the allowance.</p>';
+  if(!rows) return '<p class="foot" style="margin:0">No contract days set. Edit a client in the Clients tab and choose a contract allowance to see how many days you have left.</p>';
+  return '<h3 style="margin-bottom:8px">Contract days left, up to '+fmtDayY(addDays(parse(w),6))+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Client</th><th>Period</th><th>Carried in</th><th>New days</th><th>Logged</th><th>Days left</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="foot" style="margin:8px 0 0">Unused days roll over to later periods with no expiry. A negative number means you logged more days than the contract allows.</p>';
 }
 
 function monthStats(a,ym){
@@ -494,17 +589,19 @@ function monthStats(a,ym){
     else { F+=pa; Fq+=(a.rateType==='hour' ? pd*a.hoursPerDay : pd); Fd+=pd; }
   }
   var rec=state.payments[a.id+'|'+ym]; var R=rec?rec.amount:0;
+  var inv=state.invoices[a.id+'|'+ym]||null;
   var endD=new Date(p[0],p[1],0);
-  return { qty:qty,L:L,F:F,P:P,R:R,rec:rec,Fq:Fq,Fd:Fd, end:iso(endD), due:iso(addDays(endD,a.terms)) };
+  var dueBase = inv && inv.sent ? parse(inv.sent) : endD;
+  return { qty:qty,L:L,F:F,P:P,R:R,rec:rec,inv:inv,Fq:Fq,Fd:Fd, end:iso(endD), due:iso(addDays(dueBase,a.terms)) };
 }
 function statusOf(s){
-  var done = s.end < todayISO;
+  var done = s.end < todayISO, sent = s.inv && s.inv.sent;
   if(!done){ return (s.L>0||s.F>0) ? ['info', s.end>=todayISO && s.L>0 ? 'In progress' : 'Planned'] : ['idle','—']; }
   if(s.L<=0.004) return ['idle','—'];
   if(s.R >= s.L-0.005) return ['good','Received'];
   if(s.R>0 && todayISO<=s.due) return ['warn','Part received'];
   if(todayISO>s.due) return ['crit', s.R>0 ? 'Overdue (part)' : 'Overdue'];
-  return ['warn','Awaiting payment'];
+  return ['warn', sent ? 'Invoiced' : 'Awaiting payment'];
 }
 function addTo(map,cur,v){ map[cur]=(map[cur]||0)+v; }
 function curLines(map){
@@ -515,25 +612,91 @@ function curLines(map){
 
 /* ---------- views ---------- */
 function emptyState(){
-  return '<section class="card empty"><h2>Add your first assignment</h2>'+
-    '<p>An assignment is a client engagement with a rate and dates. Once you have one, the planner, timesheet and income views fill in.</p>'+
-    '<div class="ctl"><button class="btn primary" data-act="goto-assign">Add assignment</button><button class="btn" data-act="example">Load example data</button></div></section>';
+  return '<section class="card empty"><h2>Add your first client</h2>'+
+    '<p>A client is an engagement with a rate and dates. Once you have one, Today, the planner, timesheet and income views fill in.</p>'+
+    '<div class="ctl"><button class="btn primary" data-act="goto-assign">Add client</button><button class="btn" data-act="example">Load example data</button></div></section>';
+}
+function showDay(d){
+  var g=d.getDay(); if(g!==0 && g!==6) return true;
+  if(!state.settings.hideWeekends) return true;
+  return state.assignments.some(function(a){ var k=a.id+'|'+iso(d); return state.entries[k] || state.notes[k]; });
+}
+
+/* Today: log time with big targets. This is the view you use every day. */
+function checklistHTML(){
+  if(LS.get('solo-planner-checklist')==='1') return '';
+  var steps=[
+    ['Add a client', state.assignments.length>0, '#assignments'],
+    ['Check your weekly plan', LS.get('solo-planner-seen-plan')==='1', '#planner'],
+    ['Log your first day', Object.keys(state.entries).length>0, '#timesheet'],
+    ['Record a payment', Object.keys(state.payments).length>0, '#income']
+  ];
+  var n=steps.filter(function(s){ return s[1]; }).length;
+  if(n===steps.length) return '';
+  return '<section class="card check"><div class="bar" style="margin:0"><h3>Getting started · '+n+' of '+steps.length+'</h3><button class="btn small" data-act="cl-dismiss">Dismiss</button></div><ul>'+
+    steps.map(function(s){ return '<li class="'+(s[1]?'done':'')+'"><span aria-hidden="true">'+(s[1]?'✓':'○')+'</span>'+(s[1]?esc(s[0]):'<a href="'+s[2]+'">'+esc(s[0])+'</a>')+'</li>'; }).join('')+'</ul></section>';
+}
+function todayCard(a){
+  var key=a.id+'|'+todayISO, q=state.entries[key]||0, isDay=a.rateType==='day';
+  var pl=plannedOnDate(a,todayISO); if(!isDay) pl=pl*a.hoursPerDay; pl=Math.round(pl*2)/2;
+  var b=bankAt(a,iso(monday(today)));
+  var quick = isDay
+    ? '<button class="btn" data-set="'+key+'|0.5">Half day</button><button class="btn primary" data-set="'+key+'|1">Full day</button>'
+    : '<button class="btn primary" data-set="'+key+'|'+a.hoursPerDay+'">Full day ('+a.hoursPerDay+' h)</button>';
+  if(q) quick+='<button class="btn" data-set="'+key+'|0">Clear</button>';
+  return '<section class="tcard" style="border-left-color:'+a.color+'">'+
+    '<div class="thead"><strong><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</strong><span class="meta">'+esc(rateLabel(a))+'</span></div>'+
+    '<div class="meta">Planned today: '+(pl?r1(pl)+' '+(isDay?'d':'h'):'nothing')+(b?' · Contract days left: <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div>'+
+    '<div class="stepper"><button class="sbtn" data-step="'+a.id+'|-1" aria-label="Less time for '+esc(a.name)+'">−</button>'+
+      '<div class="sval num" aria-live="polite">'+(q?fmtN(q):'0')+'<small>'+(isDay?(q===1?'day':'days'):(q===1?'hour':'hours'))+(q?' · '+money(q*a.rate,a.currency):'')+'</small></div>'+
+      '<button class="sbtn" data-step="'+a.id+'|1" aria-label="More time for '+esc(a.name)+'">+</button></div>'+
+    '<div class="tact">'+quick+'</div>'+
+    '<textarea data-notetext="'+key+'" placeholder="Note for today (optional)" aria-label="Note for '+esc(a.name)+', today">'+esc(state.notes[key]||'')+'</textarea>'+
+  '</section>';
+}
+function dayWord(q){ return q===0.5 ? 'half a day' : (q===1 ? 'one day' : fmtN(q)+' days'); }
+function renderToday(){
+  if(!state.assignments.length) return emptyState();
+  var wk=monday(today), wkISO=iso(wk), days=[], i;
+  for(i=0;i<7;i++) days.push(addDays(wk,i));
+  var vis=days.filter(showDay);
+  var runToday=state.assignments.filter(function(a){ return inRange(a,todayISO); });
+  var runWeek=state.assignments.filter(function(a){ return weekOverlaps(a,wkISO); });
+  var h='<div class="bar"><h2>Today</h2><span class="hint" style="margin:0">'+fmtDow(today)+' '+fmtDayY(today)+'</span></div>'+checklistHTML();
+  if(!runToday.length) h+='<div class="card" style="margin-bottom:22px">No client runs today. You can still log time for this week below, or open the Clients tab to change dates.</div>';
+  else h+='<div class="tcards">'+runToday.map(todayCard).join('')+'</div>';
+  if(!runWeek.length) return h;
+  h+='<h3 style="margin-bottom:8px">This week</h3><p class="hint" style="margin-top:0">Tap a day to cycle full day, half day, none. Open the Timesheet for other weeks and months.</p>'+
+    '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Client</th>'+
+    vis.map(function(d){ return '<th class="'+(iso(d)===todayISO?'now':'')+'">'+fmtDow(d)+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Logged / plan</th></tr></thead><tbody>';
+  runWeek.forEach(function(a){
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small><button class="hlink under" data-tfillweek="'+a.id+'">Fill week from plan</button></small></th>'+
+      vis.map(function(d){
+        var dI=iso(d), q=state.entries[a.id+'|'+dI]||0, cls=(dI===todayISO?'now':'');
+        if(a.rateType==='day') return '<td class="'+cls+'"><button class="dbtn'+(q>=1?' full':(q?' on':''))+'" data-cycle="'+a.id+'|'+dI+'" aria-label="'+esc(a.name)+', '+fmtDow(d)+' '+d.getDate()+': '+(q?dayWord(q):'nothing logged')+'. Tap to change.">'+(q===0.5?'½':(q?fmtN(q):'–'))+'</button></td>';
+        return '<td class="'+cls+'"><input class="cell" inputmode="decimal" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', hours worked"></td>';
+      }).join('')+
+      '<td class="num">'+r1(usedDays(a,wkISO))+' / '+r1(plannedDays(a,wkISO))+' d</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
 }
 
 /* Planner month view: read-only overview worked out from the weekly plan; a month opens its weeks for editing. */
-function shortMonth(ym){ return parse(ym+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'}); }
+function shortMonth(ym){ return parse(ym+'-01').toLocaleDateString(LOC(),{month:'short',year:'numeric'}); }
 function monthPlanned(a,ym){ var n=monthEndDate(ym).getDate(), t=0, i; for(i=1;i<=n;i++) t+=plannedOnDate(a, ym+'-'+pad(i)); return t; }
 function workdaysIn(ym){ var n=monthEndDate(ym).getDate(), c=0, i, g; for(i=1;i<=n;i++){ g=parse(ym+'-'+pad(i)).getDay(); if(g>0 && g<6) c++; } return c; }
+function legendHTML(){ return '<p class="legend noprint" aria-hidden="true">Fewer days <i></i><i></i><i></i><i></i><i></i> More days</p>'; }
 function renderPlannerMonths(){
   var months=[], i; for(i=0;i<12;i++) months.push(shiftMonth(plMonthStart,i));
-  var cur=ymOf(today), caps=months.map(workdaysIn), tots=months.map(function(){ return 0; });
+  var cur=ymOf(today), caps=months.map(function(m){ return workdaysIn(m)*CAP()/5; }), tots=months.map(function(){ return 0; });
   var h='<div class="bar"><h2>Planner</h2></div>'+
     '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-month')+
     navGroup('p-prev','p-next','<span class="lbl">'+shortMonth(months[0])+' – '+shortMonth(months[11])+'</span>','Back 3 months','Forward 3 months')+
     '<button class="btn" data-act="p-today">Today</button></div>'+
-    '<p class="hint">Planned days per month, worked out from the weekly plan. Capacity is the number of weekdays in the month. To change the plan, select a month to open its weeks.</p>'+
+    '<p class="hint">Planned days per month, worked out from the weekly plan. Capacity is your working days per week ('+r1(CAP())+') across the weekdays in the month. To change the plan, use “Open weeks” under a month, or select any month.</p>'+legendHTML()+
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Month</th>'+
-    months.map(function(ym){ return '<th class="'+(ym===cur?'now':'')+'"><button class="hlink" data-pmonth="'+ym+'" title="Open the weeks of '+monthLabel(ym)+'">'+shortMonth(ym)+'</button></th>'; }).join('')+'</tr></thead><tbody>';
+    months.map(function(ym){ return '<th class="'+(ym===cur?'now':'')+'"><button class="hlink under" data-pmonth="'+ym+'" title="Open the weeks of '+monthLabel(ym)+'">'+shortMonth(ym)+'</button></th>'; }).join('')+'</tr></thead><tbody>';
   state.assignments.forEach(function(a){
     h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+'</small></th>'+
       months.map(function(ym,mi){
@@ -543,13 +706,15 @@ function renderPlannerMonths(){
       }).join('')+'</tr>';
   });
   h+='<tr class="sum"><th class="sticky">Planned days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+(t?r1(round2(t)):'')+'</td>'; }).join('')+'</tr>'+
-     '<tr class="sum"><th class="sticky">Capacity (weekdays)</th>'+caps.map(function(c){ return '<td class="num">'+c+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Capacity</th>'+caps.map(function(c){ return '<td class="num">'+r1(round2(c))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Free days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+r1(round2(Math.max(0,caps[mi]-t)))+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Edit weeks</th>'+months.map(function(ym){ return '<td><button class="btn small" data-pmonth="'+ym+'">Open weeks</button></td>'; }).join('')+'</tr>'+
      '</tbody></table></div>';
   return h;
 }
 function renderPlanner(){
   if(!state.assignments.length) return emptyState();
+  LS.set('solo-planner-seen-plan','1');
   if(plMode==='month') return renderPlannerMonths();
   var weeks=[], i;
   for(i=0;i<14;i++) weeks.push(iso(addDays(plannerStart,i*7)));
@@ -557,20 +722,20 @@ function renderPlanner(){
   var pLast=addDays(parse(weeks[weeks.length-1]),6);
   var h='<div class="bar"><h2>Planner</h2></div>'+
     '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-week')+
-    navGroup('p-prev','p-next','<span class="lbl">'+fmtDay(parse(weeks[0]))+' – '+fmtDay(pLast)+' '+pLast.getFullYear()+'</span>','Back 4 weeks','Forward 4 weeks')+
+    navGroup('p-prev','p-next','<span class="lbl">'+fmtDay(parse(weeks[0]))+' – '+fmtDayY(pLast)+'</span>','Back 4 weeks','Forward 4 weeks')+
     '<button class="btn" data-act="p-today">Today</button></div>'+
-    '<p class="hint">Planned days per week, one row per assignment. Capacity is 5 days a week. Weeks you leave alone follow the assignment’s default; change any cell to override it, or clear it to go back to the default.</p>'+
+    '<p class="hint">The days you plan to work each week, one row per client. Capacity is '+r1(CAP())+' days a week (change it in Clients › Settings). Weeks you leave alone follow the client’s default; change any cell to override it, or clear it to go back to the default.</p>'+legendHTML()+
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Week starting</th>'+
     weeks.map(function(w){ return '<th class="'+(w===thisW?'now':'')+'">'+fmtDay(parse(w))+'</th>'; }).join('')+'</tr></thead><tbody>';
   state.assignments.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="btn small" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset</button></small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset row</button></small></th>'+
       weeks.map(function(w){
         var v=plannedDays(a,w);
-        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v))+'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"></td>';
+        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"></td>';
       }).join('')+'</tr>';
   });
   h+='<tr class="sum"><th class="sticky">Planned days</th>'+weeks.map(function(w){ return '<td class="num" data-tot="'+w+'"></td>'; }).join('')+'</tr>'+
-     '<tr class="sum"><th class="sticky">Free days (of 5)</th>'+weeks.map(function(w){ return '<td class="num" data-free="'+w+'"></td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Free days (of '+r1(CAP())+')</th>'+weeks.map(function(w){ return '<td class="num" data-free="'+w+'"></td>'; }).join('')+'</tr>'+
      '</tbody></table></div>';
   return h;
 }
@@ -579,9 +744,9 @@ function refreshPlannerTotals(){
     var w=td.getAttribute('data-tot'), t=0;
     state.assignments.forEach(function(a){ t+=plannedDays(a,w); });
     td.textContent = t ? String(round2(t)) : '';
-    td.className = 'num'+(t>5?' over':'');
+    td.className = 'num'+(t>CAP()+0.004?' over':'');
     var fr=$('[data-free="'+w+'"]');
-    if(fr){ fr.textContent = String(round2(Math.max(0,5-t))); fr.className='num'+(t>5?' over':''); }
+    if(fr){ fr.textContent = String(round2(Math.max(0,CAP()-t))); fr.className='num'+(t>CAP()+0.004?' over':''); }
   });
 }
 
@@ -594,7 +759,7 @@ function mondayOfIsoWeek(s){ var r=/^(\d{4})-W(\d{2})$/.exec(s); return r ? addD
 function monthEndDate(ym){ var p=ym.split('-').map(Number); return new Date(p[0],p[1],0); }
 function shiftMonth(ym,n){ var p=ym.split('-').map(Number); return ymOf(new Date(p[0],p[1]-1+n,1)); }
 function firstWeekOf(ym){ return ym===ymOf(today) ? monday(today) : monday(addDays(parse(ym+'-01'),6)); }
-/* Days shown in the Timesheet: the week, or every day of the selected month. */
+/* Days covered by the Timesheet: the week, or every day of the selected month. */
 function weekDays(){
   var a=[], i;
   if(tsMode==='month'){ var n=monthEndDate(tsMonth).getDate(); for(i=1;i<=n;i++) a.push(parse(tsMonth+'-'+pad(i))); }
@@ -604,6 +769,7 @@ function weekDays(){
 function renderTimesheet(){
   if(!state.assignments.length) return emptyState();
   var days=weekDays(), isM=tsMode==='month', f=iso(days[0]), l=iso(days[days.length-1]), word=isM?'month':'week';
+  var vd=days.filter(showDay);
   var rows=state.assignments.filter(function(a){ return (a.start<=l && (!a.end || a.end>=f)) || days.some(function(d){ return state.entries[a.id+'|'+iso(d)] || state.notes[a.id+'|'+iso(d)]; }); });
   var shownYM = isM ? tsMonth : ymOf(addDays(weekAnchor,3));
   var picker = isM ? '<input type="month" id="t-month" value="'+shownYM+'" aria-label="Choose month">'
@@ -611,25 +777,25 @@ function renderTimesheet(){
   var h='<div class="bar"><h2>Timesheet</h2></div>'+
     '<div class="toolbar">'+seg([['t-mode-week','Week'],['t-mode-month','Month']], isM?'t-mode-month':'t-mode-week')+
     navGroup('t-prev','t-next',picker,'Previous '+word,'Next '+word)+
-    '<button class="btn" data-act="t-today">Today</button></div>'+
-    '<p class="hint">'+(isM?'<strong>'+monthLabel(tsMonth)+'</strong>':'Week of '+fmtDay(weekAnchor)+' to '+fmtDay(addDays(weekAnchor,6)))+'. Enter days (0.5 steps) for day-rate work and hours for hourly work. The days bank below the table counts unused days from earlier periods.</p>';
-  if(!rows.length) return h+'<div class="card">No assignment runs this '+word+'.</div>';
-  h+='<div class="scroll"><table class="grid'+(isM?' mgrid':'')+'"><thead><tr><th class="sticky">Assignment</th>'+
-    days.map(function(d){ var we=(d.getDay()===0||d.getDay()===6), wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':''; return '<th class="'+(iso(d)===todayISO?'now':(we?'we':''))+wk+'">'+(isM?d.toLocaleDateString('en-GB',{weekday:'narrow'}):fmtDow(d))+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Total</th></tr></thead><tbody>';
+    '<button class="btn" data-act="t-today">Today</button><span class="sp"></span>'+
+    '<button class="btn" data-act="t-weekends" aria-pressed="'+(!!state.settings.hideWeekends)+'">Weekends: '+(state.settings.hideWeekends?'hidden':'shown')+'</button></div>'+
+    '<p class="hint">'+(isM?'<strong>'+monthLabel(tsMonth)+'</strong>':'Week of '+fmtDay(weekAnchor)+' to '+fmtDay(addDays(weekAnchor,6)))+'. Enter days (0.5 steps) for day-rate work and hours for hourly work. Use the arrow keys or Enter to move between cells. Use the ✎ button for a note. On a phone, the Today tab is quicker.</p>';
+  if(!rows.length) return h+'<div class="card">No client runs this '+word+'.</div>';
+  h+='<div class="scroll"><table class="grid'+(isM?' mgrid':'')+'"><thead><tr><th class="sticky">Client</th>'+
+    vd.map(function(d){ var we=(d.getDay()===0||d.getDay()===6), wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':''; return '<th class="'+(iso(d)===todayISO?'now':(we?'we':''))+wk+'">'+(isM?d.toLocaleDateString(LOC(),{weekday:'narrow'}):fmtDow(d))+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Total</th></tr></thead><tbody>';
   rows.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="btn small" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
-      days.map(function(d){
-        var dI=iso(d), we=(d.getDay()===0||d.getDay()===6), q=state.entries[a.id+'|'+dI]||0;
-        var pl=plannedOnDate(a,dI); if(a.rateType==='hour') pl=pl*a.hoursPerDay; pl=Math.round(pl*2)/2;
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="hlink under" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
+      vd.map(function(d){
+        var dI=iso(d), we=(d.getDay()===0||d.getDay()===6), q=state.entries[a.id+'|'+dI]||0, hasNote=!!state.notes[a.id+'|'+dI];
         var wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':'';
-        return '<td class="'+(dI===todayISO?'now':(we?'we':''))+wk+'"><input class="cell" inputmode="decimal" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', '+(a.rateType==='day'?'days':'hours')+' worked">'+(q?'<button class="x" data-clearentry="'+a.id+'|'+dI+'" aria-label="Clear entry">×</button>':'')+'<button class="nb'+(state.notes[a.id+'|'+dI]?' on':'')+'" data-opennote="'+a.id+'|'+dI+'" aria-label="Note for '+esc(a.name)+', '+dI+'" title="Add a note">✎</button></td>';
+        return '<td class="'+(dI===todayISO?'now':(we?'we':''))+wk+'"><input class="cell" inputmode="decimal" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', '+(a.rateType==='day'?'days':'hours')+' worked">'+(q?'<button class="x" data-clearentry="'+a.id+'|'+dI+'" aria-label="Clear entry" title="Clear entry">×</button>':'')+'<button class="nb'+(hasNote?' on':'')+'" data-opennote="'+a.id+'|'+dI+'" aria-label="'+(hasNote?'Edit note':'Add a note')+' for '+esc(a.name)+', '+dI+'" title="'+(hasNote?'Edit note':'Add a note')+'">✎</button></td>';
       }).join('')+'<td class="tot num" id="rt-'+a.id+'"></td></tr>';
     if(noteKey && noteKey.split('|')[0]===a.id){
       var nd=parse(noteKey.split('|')[1]);
-      h+='<tr class="noterow"><th class="sticky"></th><td colspan="'+(days.length+1)+'"><label>Note for '+fmtDow(nd)+' '+fmtDay(nd)+'<textarea data-notetext="'+noteKey+'" placeholder="What did you work on?">'+esc(state.notes[noteKey]||'')+'</textarea></label><div class="ctl" style="margin-top:6px"><button class="btn small" data-act="note-close">Done</button></div></td></tr>';
+      h+='<tr class="noterow"><th class="sticky"></th><td colspan="'+(vd.length+1)+'"><label>Note for '+fmtDow(nd)+' '+fmtDay(nd)+'<textarea data-notetext="'+noteKey+'" placeholder="What did you work on?">'+esc(state.notes[noteKey]||'')+'</textarea></label><div class="ctl" style="margin-top:6px"><button class="btn small" data-act="note-close">Done</button></div></td></tr>';
     }
   });
-  h+='<tr class="sum"><th class="sticky">'+(isM?'Month':'Week')+' total</th><td colspan="'+(days.length+1)+'" class="num" id="ft" style="text-align:right"></td></tr></tbody></table></div>'+
+  h+='<tr class="sum"><th class="sticky">'+(isM?'Month':'Week')+' total</th><td colspan="'+(vd.length+1)+'" class="num" id="ft" style="text-align:right"></td></tr></tbody></table></div>'+
     '<div class="tfoot"><button class="btn small danger" data-act="wk-clear">Clear this '+word+'…</button></div>';
   h+='<section class="card" id="bank" style="margin-top:16px"></section>';
   var nl=[]; days.forEach(function(d){ state.assignments.forEach(function(a){ var n=state.notes[a.id+'|'+iso(d)]; if(n) nl.push({ d:d, a:a, n:n }); }); });
@@ -655,7 +821,7 @@ function renderIncome(){
   for(i=0;i<21;i++) months.push(ymOf(new Date(start.getFullYear(), start.getMonth()+i, 1)));
   var received={}, outstanding={}, overdue={}, forecast={}, fDays=0, fHours=0;
   Object.keys(state.payments).forEach(function(k){
-    var a=state.assignments.filter(function(x){ return x.id===k.split('|')[0]; })[0]; if(!a) return;
+    var a=byId(k.split('|')[0]); if(!a) return;
     var p=state.payments[k]; if(p.date && p.date.slice(0,4)===String(today.getFullYear())) addTo(received,a.currency,p.amount);
   });
   var idx=months.indexOf(cur);
@@ -679,27 +845,32 @@ function renderIncome(){
     state.assignments.forEach(function(a){
       var s=monthStats(a,ym);
       if(s.L<=0 && s.P<=0 && s.F<=0 && s.R<=0) return;
-      var st=statusOf(s);
+      var st=statusOf(s), key=a.id+'|'+ym, sym=({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency));
       addTo(tot,a.currency,s.F); totD+=s.Fd;
       var canFull = s.L>0.004 && s.R<s.L-0.005;
+      var invCell = s.L>0.004
+        ? '<input class="inv" data-invno="'+key+'" value="'+esc(s.inv?s.inv.no:'')+'" placeholder="Invoice no." aria-label="Invoice number for '+esc(a.name)+', '+monthLabel(ym)+'"><small><input class="dt" type="date" data-invsent="'+key+'" value="'+esc(s.inv?s.inv.sent:'')+'" aria-label="Invoice sent date for '+esc(a.name)+', '+monthLabel(ym)+'"></small>'
+        : '—';
       rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td>'+
         '<td class="num">'+(s.qty?round2(s.qty)+' '+unit(a):'—')+'<small>'+(s.L?money(s.L,a.currency):'')+'</small></td>'+
         '<td class="num">'+(s.Fq>0.004?r1(round2(s.Fq))+' '+unit(a):'—')+'<small>'+(s.F>0.004?money(s.F,a.currency):'')+'</small></td>'+
-        '<td><span class="amtwrap"><span class="cur" aria-hidden="true">'+({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency))+'</span><input class="amt'+mk()+'" inputmode="decimal" data-rec="'+a.id+'|'+ym+'" value="'+(s.R?String(round2(s.R)):'')+'" placeholder="0" aria-label="Received in '+esc(a.currency)+' for '+esc(a.name)+', '+monthLabel(ym)+'"></span>'+
-          (s.rec?'<small><input class="dt" type="date" data-recdate="'+a.id+'|'+ym+'" value="'+esc(s.rec.date||'')+'" aria-label="Date received"></small>':'')+'</td>'+
-        '<td class="num">'+fmtDay(parse(s.due))+'</td>'+
-        '<td><span class="pill '+st[0]+'">'+st[1]+'</span>'+(canFull?'<small><button class="btn small" data-full="'+a.id+'|'+ym+'">Mark received</button></small>':'')+'</td></tr>';
+        '<td>'+invCell+'</td>'+
+        '<td><span class="amtwrap"><span class="cur" aria-hidden="true">'+sym+'</span><input class="amt'+mk()+'" inputmode="decimal" data-rec="'+key+'" value="'+(s.R?String(round2(s.R)):'')+'" placeholder="0" aria-label="Received in '+esc(a.currency)+' for '+esc(a.name)+', '+monthLabel(ym)+'"></span>'+
+          (s.rec?'<small><input class="dt" type="date" data-recdate="'+key+'" value="'+esc(s.rec.date||'')+'" aria-label="Date received"></small>':'')+
+          (canFull?'<small><button class="btn small primary" data-full="'+key+'">Mark received</button></small>':'')+'</td>'+
+        '<td class="num">'+fmtDayY(parse(s.due))+'</td>'+
+        '<td><span class="pill '+st[0]+'">'+st[1]+'</span></td></tr>';
     });
     if(!rows) return '';
     var tl=Object.keys(tot).filter(function(k){ return tot[k]>0.004; }).map(function(k){ return money(tot[k],k); }).join(' · ');
     return '<section class="month'+(ym===cur?' cur':'')+'"><h3><span>'+monthLabel(ym)+'</span><span class="mt">Forecast '+r1(round2(totD))+' days'+(tl?' · '+tl:'')+'</span></h3>'+
-      '<div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Logged</th><th>Forecast</th><th>Received</th><th>Due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+      '<div class="scroll"><table class="inc"><thead><tr><th>Client</th><th>Logged</th><th>Forecast</th><th>Invoice</th><th>Received</th><th>Due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
   }
   var upcoming = months.filter(function(m){ return m>=cur; }).map(monthBlock).join('');
-  var past = months.filter(function(m){ return m<cur; }).reverse().map(monthBlock).join('');
+  var pastList = months.filter(function(m){ return m<cur; }).reverse().map(monthBlock).filter(Boolean);
   h+=(upcoming||'<p class="hint">Nothing planned from this month on.</p>');
-  if(past) h+='<h2 style="margin:28px 0 12px">Earlier months</h2>'+past;
-  h+='<p class="foot">Assumptions: you invoice at month end, and the due date is month end plus the assignment’s payment terms. Forecast is the work you logged up to today plus the days you planned after today. Totals are per currency, with no conversion.</p>';
+  if(pastList.length) h+='<details class="past" id="past-d"'+(pastOpen?' open':'')+'><summary>Earlier months ('+pastList.length+')</summary>'+pastList.join('')+'</details>';
+  h+='<p class="foot">Assumptions: you invoice at month end unless you enter the date you sent the invoice, and the due date is that date plus the client’s payment terms. Forecast is the work you logged up to today plus the days you planned after today. Totals are per currency, with no conversion.</p>';
   return h;
 }
 
@@ -708,7 +879,7 @@ var PERIODS=[['week','Week'],['month','Month'],['quarter','Quarter'],['half','Ha
 var PLEN={ month:1, quarter:3, half:6, year:12 };
 function periodOf(type,anc){
   var y=anc.getFullYear(), m=anc.getMonth(), from, to, label;
-  if(type==='week'){ from=monday(anc); to=addDays(from,6); label='Week of '+fmtDay(from)+' '+from.getFullYear(); }
+  if(type==='week'){ from=monday(anc); to=addDays(from,6); label='Week of '+fmtDayY(from); }
   else {
     var len=PLEN[type], sm=Math.floor(m/len)*len;
     from=new Date(y,sm,1); to=new Date(y,sm+len,0);
@@ -725,7 +896,7 @@ function subPeriods(type,from,to){
   while(s<=to){
     if(type==='week'){ e=new Date(s); out.push({ from:iso(s), to:iso(e), label:fmtDow(s)+' '+fmtDay(s) }); }
     else if(type==='month'){ e=addDays(monday(s),6); if(e>to) e=new Date(to); out.push({ from:iso(s), to:iso(e), label:fmtDay(s)+(iso(e)!==iso(s)?' – '+fmtDay(e):'') }); }
-    else { e=new Date(s.getFullYear(), s.getMonth()+1, 0); out.push({ from:iso(s), to:iso(e), label:s.toLocaleDateString('en-GB',{month:'long',year:'numeric'}) }); }
+    else { e=new Date(s.getFullYear(), s.getMonth()+1, 0); out.push({ from:iso(s), to:iso(e), label:s.toLocaleDateString(LOC(),{month:'long',year:'numeric'}) }); }
     s=addDays(e,1);
   }
   return out;
@@ -757,30 +928,60 @@ function reportData(){
   });
   return { P:P, f:f, t:t, as:as, per:per, lines:lines, work:work };
 }
+/* Stacked columns of days worked per sub-period. Colours are each client's own colour; the table below carries the exact values. */
+function chartHTML(subs, worked, R){
+  var n=subs.length; if(!n) return '';
+  var series=worked.map(function(a){
+    return { a:a, vals:subs.map(function(sp){ var q=0; R.lines.forEach(function(x){ if(x.a===a && x.date>=sp.from && x.date<=sp.to) q+=x.q; }); return dayEq(a,q); }) };
+  });
+  var totals=subs.map(function(_,i){ return series.reduce(function(s,x){ return s+x.vals[i]; },0); });
+  var top=Math.max(1,Math.ceil(Math.max.apply(null,totals)));
+  var W=640,H=240,L=36,Rm=8,T=22,B=30,cw=W-L-Rm,ch=H-T-B,slot=cw/n,bw=Math.min(56,slot*0.62);
+  var short=function(sp){ var d=parse(sp.from); return repType==='week' ? fmtDow(d)+' '+d.getDate() : (repType==='month' ? fmtDay(d) : d.toLocaleDateString(LOC(),{month:'short'})); };
+  var lbl='Days worked per period: '+subs.map(function(sp,i){ return short(sp)+' '+r1(round2(totals[i])); }).join(', ');
+  var svg='<svg class="ch" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(lbl)+'">';
+  [0,0.5,1].forEach(function(fr){ var y=T+ch-ch*fr; svg+='<line class="gl" x1="'+L+'" x2="'+(W-Rm)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+r1(round2(top*fr))+'</text>'; });
+  subs.forEach(function(sp,i){
+    var cx=L+i*slot+slot/2, x=cx-bw/2, y=T+ch;
+    series.forEach(function(s){
+      var v=s.vals[i]; if(v<=0.004) return;
+      var hh=v/top*ch; y-=hh;
+      svg+='<rect class="cbar" x="'+x+'" y="'+y+'" width="'+bw+'" height="'+hh+'" rx="3" fill="'+s.a.color+'"><title>'+esc(s.a.name)+' · '+esc(short(sp))+': '+r1(round2(v))+' days</title></rect>';
+    });
+    if(totals[i]>0.004) svg+='<text class="vl" x="'+cx+'" y="'+(y-6)+'" text-anchor="middle">'+r1(round2(totals[i]))+'</text>';
+    svg+='<text x="'+cx+'" y="'+(H-10)+'" text-anchor="middle">'+esc(short(sp))+'</text>';
+  });
+  svg+='</svg>';
+  var legend='<div class="legend2">'+worked.map(function(a){ return '<span><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</span>'; }).join('')+'</div>';
+  return '<section class="rsec"><h3>Days worked</h3><div class="card">'+svg+legend+'</div></section>';
+}
 function renderReports(){
   if(!state.assignments.length) return emptyState();
-  if(repFilter!=='all' && !state.assignments.some(function(a){ return a.id===repFilter; })) repFilter='all';
+  if(repFilter!=='all' && !byId(repFilter)) repFilter='all';
   var R=reportData(), tot={ deq:0, hours:0, planned:0 }, earned={}, received={};
   R.as.forEach(function(a){ var s=R.per[a.id]; tot.deq+=s.deq; tot.hours+=s.hours; tot.planned+=s.planned; addTo(earned,a.currency,s.earned); addTo(received,a.currency,s.received); });
   var isCur = iso(periodOf(repType,today).from)===R.f;
-  var fname = repFilter==='all' ? '' : state.assignments.filter(function(a){ return a.id===repFilter; })[0].name;
+  var fname = repFilter==='all' ? '' : byId(repFilter).name;
+  var util = R.work ? tot.deq/R.work : 0;
   var h='<div class="bar"><h2>Reports</h2>'+
     '<details class="menu noprint"><summary class="btn primary">Export ▾</summary><div class="pop">'+
       '<button data-act="r-csv">Download CSV</button><button data-act="r-print">Print / save as PDF</button></div></details></div>'+
     '<div class="toolbar noprint">'+seg(PERIODS.map(function(p){ return ['r-type-'+p[0],p[1]]; }), 'r-type-'+repType)+
     navGroup('r-prev','r-next','<span class="lbl">'+esc(R.P.label)+'</span>','Previous period','Next period')+
     '<button class="btn" data-act="r-now">Today</button><span class="sp"></span>'+
-    '<select class="sel" id="r-filter" aria-label="Assignment"><option value="all">All assignments</option>'+state.assignments.map(function(a){ return '<option value="'+a.id+'"'+(a.id===repFilter?' selected':'')+'>'+esc(a.name)+'</option>'; }).join('')+'</select></div>'+
-    '<p class="hint"><strong>'+esc(R.P.label)+'</strong>'+(isCur?' (current)':'')+' · '+fmtDay(R.P.from)+' '+R.P.from.getFullYear()+' to '+fmtDay(R.P.to)+' '+R.P.to.getFullYear()+' · '+(fname?esc(fname):'All assignments')+'</p>';
+    '<select class="sel" id="r-filter" aria-label="Client"><option value="all">All clients</option>'+state.assignments.map(function(a){ return '<option value="'+a.id+'"'+(a.id===repFilter?' selected':'')+'>'+esc(a.name)+'</option>'; }).join('')+'</select></div>'+
+    '<p class="hint"><strong>'+esc(R.P.label)+'</strong>'+(isCur?' (current)':'')+' · '+fmtDayY(R.P.from)+' to '+fmtDayY(R.P.to)+' · '+(fname?esc(fname):'All clients')+'</p>';
   h+='<div class="tiles">'+
     '<div class="tile"><div class="k">Days worked</div><div class="v">'+r1(round2(tot.deq))+'</div><small>≈ '+r1(round2(tot.hours))+' hours · planned '+r1(round2(tot.planned))+' days</small></div>'+
-    '<div class="tile"><div class="k">Utilisation</div><div class="v">'+(R.work?Math.round(tot.deq/R.work*100)+'%':'—')+'</div><small>of '+R.work+' working days (Mon–Fri)</small></div>'+
+    '<div class="tile"><div class="k">Utilisation</div><div class="v">'+(R.work?Math.round(util*100)+'%':'—')+'</div>'+(R.work?'<div class="meter" role="img" aria-label="'+Math.round(util*100)+' percent of working days"><span style="width:'+Math.min(100,Math.round(util*100))+'%"></span></div>':'')+'<small>of '+R.work+' working days (Mon–Fri)</small></div>'+
     '<div class="tile"><div class="k">Earned</div>'+curLines(earned)+'<small>Logged time × rate</small></div>'+
     '<div class="tile"><div class="k">Received</div>'+curLines(received)+'<small>Payments dated in this period</small></div>'+
     '</div>';
   var active=R.as.filter(function(a){ var s=R.per[a.id]; return s.qty || s.planned>0.004 || s.received; });
   if(!active.length) return h+'<div class="card">Nothing logged or planned in this period.</div>';
-  // by assignment
+  var worked=active.filter(function(a){ return R.per[a.id].qty; });
+  var subs=subPeriods(repType,R.P.from,R.P.to);
+  if(worked.length) h+=chartHTML(subs,worked,R);
   var rows='';
   active.forEach(function(a){
     var s=R.per[a.id];
@@ -789,11 +990,9 @@ function renderReports(){
       '<td class="num">'+money(s.earned,a.currency)+'</td><td class="num">'+(s.received?money(s.received,a.currency):'—')+'</td></tr>';
   });
   rows+='<tr class="rtot"><td>Total</td><td></td><td class="num">'+r1(round2(tot.deq))+'</td><td class="num">'+r1(round2(tot.planned))+'</td><td class="num">'+curText(earned)+'</td><td class="num">'+curText(received)+'</td></tr>';
-  h+='<section class="rsec"><h3>By assignment</h3><div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Logged</th><th>Days</th><th>Planned days</th><th>Earned</th><th>Received</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
-  // breakdown over time
-  var worked=active.filter(function(a){ return R.per[a.id].qty; });
+  h+='<section class="rsec"><h3>By client</h3><div class="scroll"><table class="inc"><thead><tr><th>Client</th><th>Logged</th><th>Days</th><th>Planned days</th><th>Earned</th><th>Received</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
   if(worked.length){
-    var subs=subPeriods(repType,R.P.from,R.P.to), br='';
+    var br='';
     subs.forEach(function(sp){
       var dsum=0, em={};
       var cells=worked.map(function(a){
@@ -807,63 +1006,80 @@ function renderReports(){
     var byLbl={ week:'By day', month:'By week', quarter:'By month', half:'By month', year:'By month' }[repType];
     h+='<section class="rsec"><h3>'+byLbl+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Period</th>'+worked.map(function(a){ return '<th><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</th>'; }).join('')+'<th>Days</th><th>Earned</th></tr></thead><tbody>'+br+'</tbody></table></div></section>';
   }
-  // detail
   if(R.lines.length){
-    h+='<section class="rsec"><h3>Detail</h3><div class="scroll"><table class="inc"><thead><tr><th>Date</th><th>Assignment</th><th>Time</th><th>Amount</th><th style="text-align:left">Note</th></tr></thead><tbody>'+
-      R.lines.map(function(x){ var d=parse(x.date); return '<tr><td>'+fmtDow(d)+' '+fmtDay(d)+' '+d.getFullYear()+'</td><td><span class="dot" style="background:'+x.a.color+'"></span> '+esc(x.a.name)+'</td><td class="num">'+(x.q?r1(x.q)+' '+unit(x.a):'—')+'</td><td class="num">'+(x.q?money(x.amt,x.a.currency):'—')+'</td><td class="note">'+esc(x.note).replace(/\n/g,'<br>')+'</td></tr>'; }).join('')+
+    h+='<section class="rsec"><h3>Detail</h3><div class="scroll"><table class="inc"><thead><tr><th>Date</th><th>Client</th><th>Time</th><th>Amount</th><th style="text-align:left">Note</th></tr></thead><tbody>'+
+      R.lines.map(function(x){ var d=parse(x.date); return '<tr><td>'+fmtDow(d)+' '+fmtDayY(d)+'</td><td><span class="dot" style="background:'+x.a.color+'"></span> '+esc(x.a.name)+'</td><td class="num">'+(x.q?r1(x.q)+' '+unit(x.a):'—')+'</td><td class="num">'+(x.q?money(x.amt,x.a.currency):'—')+'</td><td class="note">'+esc(x.note).replace(/\n/g,'<br>')+'</td></tr>'; }).join('')+
       '</tbody></table></div></section>';
   }
-  h+='<p class="foot">Days convert hourly work at the assignment’s hours per day. Hours for day-rate work use the assignment’s hours per day (8 if not set). Totals are per currency, with no conversion.</p>';
+  h+='<p class="foot">Days convert hourly work at the client’s hours per day. Hours for day-rate work use the client’s hours per day (8 if not set). Totals are per currency, with no conversion.</p>';
   return h;
 }
 function csvCell(v){ v=v==null?'':String(v); return /[",;\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function exportReportCSV(){
   var R=reportData(), L=[];
   var row=function(arr){ L.push(arr.map(csvCell).join(',')); };
-  var fname = repFilter==='all' ? 'All' : state.assignments.filter(function(a){ return a.id===repFilter; })[0].name;
-  row(['Solo Planner report', R.P.label]); row(['From', R.f]); row(['To', R.t]); row(['Assignments', fname]); row(['Working days (Mon-Fri)', R.work]); row([]);
+  var fname = repFilter==='all' ? 'All' : byId(repFilter).name;
+  row(['Solo Planner report', R.P.label]); row(['From', R.f]); row(['To', R.t]); row(['Clients', fname]); row(['Working days (Mon-Fri)', R.work]); row([]);
   row(['Summary']);
-  row(['Assignment','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
+  row(['Client','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
   R.as.forEach(function(a){
     var s=R.per[a.id]; if(!(s.qty || s.planned>0.004 || s.received)) return;
     row([a.name, a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
   });
   row([]); row(['Detail']);
-  row(['Date','Weekday','Assignment','Quantity','Unit','Day equivalent','Hours','Rate','Currency','Amount','Note']);
+  row(['Date','Weekday','Client','Quantity','Unit','Day equivalent','Hours','Rate','Currency','Amount','Note']);
   R.lines.forEach(function(x){
     row([x.date, fmtDow(parse(x.date)), x.a.name, round2(x.q), unitWord(x.a), round2(dayEq(x.a,x.q)), round2(hoursOf(x.a,x.q)), x.a.rate, x.a.currency, round2(x.amt), x.note]);
   });
   download('solo-planner-report-'+repType+'-'+R.f+'.csv', '﻿'+L.join('\r\n'), 'text/csv;charset=utf-8');
 }
 
+/* ---------- clients (assignments) ---------- */
+var LOCALES=[['en-GB','English (UK): 24 Nov 2026'],['en-US','English (US): Nov 24, 2026'],['pt-PT','Português (Portugal)'],['pt-BR','Português (Brasil)'],['es-ES','Español'],['fr-FR','Français'],['de-DE','Deutsch']];
+function fieldErr(id,msg){
+  var el=$('#e-'+id), inp=$('#f-'+id);
+  if(el) el.textContent=msg||'';
+  if(inp){ if(msg) inp.setAttribute('aria-invalid','true'); else inp.removeAttribute('aria-invalid'); }
+}
 function renderAssignments(){
-  var a = editing ? state.assignments.filter(function(x){ return x.id===editing; })[0] : null;
+  var a = editing ? byId(editing) : null;
+  var open = showForm || !!a || !state.assignments.length;
   var v = a || { name:'', rateType:'day', rate:'', currency:'GBP', start:todayISO, end:'', perWeek:5, hoursPerDay:8, terms:30, allowMode:'none', allowDays:'' };
   var am=v.allowMode||'none';
-  var h='<div class="bar"><h2>Assignments</h2></div>'+
-    '<form class="f card" id="aform" novalidate>'+
-    '<label>Name<input id="f-name" required value="'+esc(v.name)+'" placeholder="Client or assignment"></label>'+
-    '<label>Color<input type="color" id="f-color" value="'+esc(v.color||COLORS[state.assignments.length % COLORS.length])+'"></label>'+
-    '<label>Billing<select id="f-type"><option value="day"'+(v.rateType==='day'?' selected':'')+'>Day rate</option><option value="hour"'+(v.rateType==='hour'?' selected':'')+'>Hourly rate</option></select></label>'+
-    '<label>Rate<input id="f-rate" class="'+mk().trim()+'" inputmode="decimal" required value="'+esc(v.rate)+'" placeholder="450"></label>'+
-    '<label>Currency<select id="f-cur">'+['GBP','EUR','USD'].map(function(c){ return '<option'+(v.currency===c?' selected':'')+'>'+c+'</option>'; }).join('')+'</select></label>'+
-    '<label>Start<input id="f-start" type="date" required value="'+esc(v.start)+'"></label>'+
-    '<label>End (optional)<input id="f-end" type="date" value="'+esc(v.end||'')+'"></label>'+
-    '<label>Days I plan to work per week (Planner)<input id="f-pw" inputmode="decimal" value="'+esc(v.perWeek)+'"></label>'+
-    '<label>Contract allowance (days the client gave you)<select id="f-amode"><option value="none"'+(am==='none'?' selected':'')+'>None</option><option value="week"'+(am==='week'?' selected':'')+'>Per week, unused roll over</option><option value="month"'+(am==='month'?' selected':'')+'>Per month, unused roll over</option><option value="total"'+(am==='total'?' selected':'')+'>One total pot of days</option></select></label>'+
-    '<label id="adays-wrap"'+(am==='none'?' hidden':'')+'>Contract days<input id="f-adays" inputmode="decimal" value="'+esc(v.allowDays||'')+'"></label>'+
-    '<label id="hpd-wrap"'+(v.rateType==='hour'?'':' hidden')+'>Hours per day<input id="f-hpd" inputmode="decimal" value="'+esc(v.hoursPerDay)+'"></label>'+
-    '<label>Payment terms (days)<input id="f-terms" inputmode="numeric" value="'+esc(v.terms)+'"></label>'+
-    '<div class="row"><button class="btn primary" type="submit">'+(a?'Save changes':'Add assignment')+'</button>'+(a?'<button class="btn" type="button" data-act="cancel-edit">Cancel</button>':'')+'<span class="err" id="f-err" role="alert"></span></div></form>';
+  var h='<div class="bar"><h2>Clients</h2>'+(open?'':'<button class="btn primary" data-act="add-client">Add client</button>')+'</div>';
+  if(open){
+    h+='<form class="f af card" id="aform" novalidate><h3 style="margin-bottom:14px">'+(a?'Edit client':'New client')+'</h3>'+
+    '<div class="grp" role="group" aria-labelledby="g1"><h4 class="gt" id="g1" style="margin:0">Client</h4>'+
+      '<label>Name<input id="f-name" required value="'+esc(v.name)+'" placeholder="Client or project"><span class="ferr" id="e-name" role="alert"></span></label>'+
+      '<label>Color<input type="color" id="f-color" value="'+esc(v.color||COLORS[state.assignments.length % COLORS.length])+'"><span class="help">Used in every view.</span></label></div>'+
+    '<div class="grp" role="group" aria-labelledby="g2"><h4 class="gt" id="g2" style="margin:0">Billing</h4>'+
+      '<label>Billing<select id="f-type"><option value="day"'+(v.rateType==='day'?' selected':'')+'>Day rate</option><option value="hour"'+(v.rateType==='hour'?' selected':'')+'>Hourly rate</option></select></label>'+
+      '<label>Rate<input id="f-rate" inputmode="decimal" required value="'+esc(v.rate)+'" placeholder="450"><span class="ferr" id="e-rate" role="alert"></span></label>'+
+      '<label>Currency<select id="f-cur">'+['GBP','EUR','USD'].map(function(c){ return '<option'+(v.currency===c?' selected':'')+'>'+c+'</option>'; }).join('')+'</select></label>'+
+      '<label id="hpd-wrap"'+(v.rateType==='hour'?'':' hidden')+'>Hours per day<input id="f-hpd" inputmode="decimal" value="'+esc(v.hoursPerDay)+'"><span class="help">Turns hours into days for reports and contract days.</span></label></div>'+
+    '<div class="grp" role="group" aria-labelledby="g3"><h4 class="gt" id="g3" style="margin:0">Dates and payment</h4>'+
+      '<label>Start<input id="f-start" type="date" required value="'+esc(v.start)+'"><span class="ferr" id="e-start" role="alert"></span></label>'+
+      '<label>End (optional)<input id="f-end" type="date" value="'+esc(v.end||'')+'"><span class="help">Leave empty if open-ended.</span><span class="ferr" id="e-end" role="alert"></span></label>'+
+      '<label>Payment terms (days)<input id="f-terms" inputmode="numeric" value="'+esc(v.terms)+'"><span class="help">Due date = invoice date + this many days.</span></label></div>'+
+    '<div class="grp" role="group" aria-labelledby="g4"><h4 class="gt" id="g4" style="margin:0">Days</h4>'+
+      '<label>Days I plan to work per week<input id="f-pw" inputmode="decimal" value="'+esc(v.perWeek)+'"><span class="help">Your plan. It feeds the Planner and the income forecast, and you can change it week by week.</span></label>'+
+      '<label>Contract allowance<select id="f-amode"><option value="none"'+(am==='none'?' selected':'')+'>None (don’t track)</option><option value="week"'+(am==='week'?' selected':'')+'>Per week, unused roll over</option><option value="month"'+(am==='month'?' selected':'')+'>Per month, unused roll over</option><option value="total"'+(am==='total'?' selected':'')+'>One total pot of days</option></select><span class="help">What the client contracted. It feeds “Contract days left” in the Timesheet.</span></label>'+
+      '<label id="adays-wrap"'+(am==='none'?' hidden':'')+'>Contract days<input id="f-adays" inputmode="decimal" value="'+esc(v.allowDays||'')+'"><span class="help">Days per week or month, or the total for the whole contract.</span><span class="ferr" id="e-adays" role="alert"></span></label></div>'+
+    '<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">'+(a?'Save changes':'Add client')+'</button>'+((a||state.assignments.length)?'<button class="btn" type="button" data-act="cancel-edit">Cancel</button>':'')+'</div></form>';
+  }
   h+='<div class="alist">'+state.assignments.map(function(x){
-    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+esc(rateLabel(x))+' · '+x.perWeek+' d/week · '+fmtDay(parse(x.start))+' '+parse(x.start).getFullYear()+' to '+(x.end?fmtDay(parse(x.end))+' '+parse(x.end).getFullYear():'open-ended')+' · pays in '+x.terms+' days'+(function(){ var b=bankAt(x,iso(monday(today))); return b?' · days left <strong>'+r1(b.balance)+'</strong>':''; })()+'</div></div>'+
+    var b=bankAt(x,iso(monday(today))), logged=usedBetween(x,'0000-01-01',todayISO);
+    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+esc(rateLabel(x))+' · '+fmtDayY(parse(x.start))+' to '+(x.end?fmtDayY(parse(x.end)):'open-ended')+' · pays in '+x.terms+' days</div>'+
+      '<div class="meta">Plan '+r1(x.perWeek)+' d/week · Logged '+r1(round2(logged))+' d'+(b?' · Contract days left <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div></div>'+
       '<div class="ctl"><button class="btn small" data-edit="'+x.id+'">Edit</button><button class="btn small danger" data-del="'+x.id+'">Delete</button></div></div>';
   }).join('')+'</div>';
-  if(state.assignments.length){
-    h+='<div style="margin-top:24px" class="ctl"><button class="btn small danger" data-act="clear">Clear all data</button></div>';
-  }
-  h+='<section class="card" style="margin-top:24px"><h3>Data file</h3><p class="hint">'+(connected?'Saving to <strong>'+esc(fileName)+'</strong>. Keep it in a cloud-synced folder.':'Not connected to a file.')+'</p><div class="ctl">'+(supportsFS?'<button class="btn small" data-act="fs-switch">Switch file</button>':'')+'<button class="btn small" data-act="export">Export copy</button><button class="btn small" data-act="import">Import…</button></div></section>';
+  h+='<section class="card" style="margin-top:24px"><h3 style="margin-bottom:10px">Settings</h3><form class="f" id="sform" novalidate>'+
+    '<label>Working days per week (capacity)<input id="s-cap" inputmode="decimal" value="'+esc(r1(CAP()))+'"><span class="help">Used by the Planner to show free days. Use 3 or 4 if you work part-time.</span></label>'+
+    '<label>Date and number format<select id="s-loc">'+LOCALES.map(function(l){ return '<option value="'+l[0]+'"'+(LOC()===l[0]?' selected':'')+'>'+l[1]+'</option>'; }).join('')+'</select><span class="help">Weeks start on Monday.</span></label>'+
+    '<label class="chk"><input type="checkbox" id="s-hw"'+(state.settings.hideWeekends?' checked':'')+'> Hide weekends in Today and Timesheet</label></form></section>';
+  h+='<section class="card" style="margin-top:16px"><h3>Data file</h3><p class="hint">'+(connected?'Saving to <strong>'+esc(fileName)+'</strong>. Keep it in a cloud-synced folder.':'Not connected to a file.')+'</p><div class="ctl">'+(supportsFS?'<button class="btn small" data-act="fs-switch">Switch file</button>':'')+'<button class="btn small" data-act="export">Export copy</button><button class="btn small" data-act="import">Import…</button></div></section>';
   h+=pwCardHTML();
+  if(state.assignments.length) h+='<div style="margin-top:24px" class="ctl"><button class="btn small danger" data-act="clear">Clear all data</button></div>';
   return h;
 }
 
@@ -878,8 +1094,11 @@ function render(){
   var m=$('#main'), bn=$('#banner');
   var bh='';
   if(conflict) bh='<span>This file was changed outside this window (another device or your sync service).</span><button class="btn small" data-act="conf-load">Load the file’s version</button><button class="btn small danger" data-act="conf-over">Overwrite with mine</button>';
-  else if(!supportsFS) bh='<span>This browser can’t save to a file on its own. Use Chrome or Edge for automatic saving; otherwise use Export in the Assignments tab.</span>';
+  else if(connected && persist==='error') bh='<span>Could not save to '+esc(fileName)+'. Your changes are still on screen.</span><button class="btn small" data-act="retry-save">Try again</button><button class="btn small" data-act="export">Export a copy</button>';
+  else if(!supportsFS) bh='<span>This browser can’t save to a file on its own, so changes are lost when you close the tab. Use Chrome or Edge for automatic saving, or export a copy often.</span><button class="btn small" data-act="export">Export a copy now</button>';
   document.body.classList.toggle('locked', locked);
+  $('#hdate').textContent = fmtDow(today)+' '+fmtDayY(today);
+  $('#lockbtn').hidden = !pwGet();
   var eb=$('#eyebtn');
   eb.innerHTML = masked
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Show amounts'
@@ -889,9 +1108,28 @@ function render(){
   bn.innerHTML=bh;
   if(!loaded){ m.innerHTML='<p class="hint">Loading…</p>'; return; }
   if(supportsFS && !connected){ m.innerHTML=renderConnect(); return; }
-  m.innerHTML = ({planner:renderPlanner,timesheet:renderTimesheet,income:renderIncome,reports:renderReports,assignments:renderAssignments})[view]();
+  m.innerHTML = ({today:renderToday,planner:renderPlanner,timesheet:renderTimesheet,income:renderIncome,reports:renderReports,assignments:renderAssignments})[view]();
   if(view==='planner') refreshPlannerTotals();
   if(view==='timesheet') refreshTimesheetTotals();
+}
+/* Re-render without losing the focused control or the scroll position (used after edits that change totals). */
+function focusId(el){
+  if(!el || el===document.body) return null;
+  var parts=[el.tagName];
+  Array.prototype.forEach.call(el.attributes, function(at){ if(/^data-/.test(at.name) || at.name==='aria-label' || at.name==='id') parts.push(at.name+'='+at.value); });
+  if(el.tagName==='BUTTON') parts.push(el.textContent);
+  return parts.join('|');
+}
+function renderKeepFocus(){
+  setTimeout(function(){
+    var id=focusId(document.activeElement), sy=window.scrollY;
+    render();
+    if(id){
+      var list=document.querySelectorAll('#main input,#main button,#main select,#main textarea,#main summary,#main a');
+      var i; for(i=0;i<list.length;i++){ if(focusId(list[i])===id){ list[i].focus({preventScroll:true}); break; } }
+    }
+    window.scrollTo(0,sy);
+  },0);
 }
 
 /* ---------- actions ---------- */
@@ -905,11 +1143,11 @@ function loadExample(){
 }
 function removeAssignment(id){
   state.assignments = state.assignments.filter(function(x){ return x.id!==id; });
-  [state.plan,state.entries,state.payments,state.notes].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.split('|')[0]===id) delete o[k]; }); });
+  [state.plan,state.entries,state.payments,state.notes,state.invoices].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.split('|')[0]===id) delete o[k]; }); });
 }
-function fillFromPlan(id){
-  var a=state.assignments.filter(function(x){ return x.id===id; })[0]; if(!a) return;
-  weekDays().forEach(function(d){
+function fillFromPlan(id, days){
+  var a=byId(id); if(!a) return;
+  days.forEach(function(d){
     var dI=iso(d), k=a.id+'|'+dI; if(state.entries[k]) return;
     var pl=plannedOnDate(a,dI); if(a.rateType==='hour') pl*=a.hoursPerDay;
     pl=Math.round(pl*2)/2; if(pl>0) state.entries[k]=pl;
@@ -918,12 +1156,35 @@ function fillFromPlan(id){
 
 function closeMenus(except){ document.querySelectorAll('details.menu[open]').forEach(function(d){ if(d!==except) d.open=false; }); }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenus(); });
+
+/* Spreadsheet-style movement between cells: arrows and Enter */
+document.addEventListener('keydown', function(e){
+  var t=e.target; if(!t.matches || !t.matches('input.cell')) return;
+  var k=e.key; if(['Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(k)<0) return;
+  if(e.shiftKey||e.altKey||e.ctrlKey||e.metaKey) return;
+  var td=t.closest('td'), tr=td.parentNode, ci=Array.prototype.indexOf.call(tr.children, td), target=null, el;
+  if(k==='ArrowLeft'||k==='ArrowRight'){
+    if(k==='ArrowLeft' && !(t.selectionStart===0 && t.selectionEnd===0)) return;
+    if(k==='ArrowRight' && t.selectionStart!==t.value.length) return;
+    el=td; while((el = k==='ArrowLeft' ? el.previousElementSibling : el.nextElementSibling)){ var c=el.querySelector('input.cell'); if(c){ target=c; break; } }
+  } else {
+    var row=tr; while((row = k==='ArrowUp' ? row.previousElementSibling : row.nextElementSibling)){ var cell=row.children[ci]; var c2=cell && cell.querySelector && cell.querySelector('input.cell'); if(c2){ target=c2; break; } }
+  }
+  if(target){ e.preventDefault(); target.focus(); target.select(); }
+});
+
+document.addEventListener('toggle', function(e){ if(e.target && e.target.id==='past-d') pastOpen=e.target.open; }, true);
+
 document.addEventListener('click', function(e){
   closeMenus(e.target.closest('details.menu'));
   var t=e.target.closest('button'); if(!t) return;
   if(t.classList.contains('tab')){ location.hash='#'+t.getAttribute('data-view'); return; }
   var act=t.getAttribute('data-act');
-  if(act==='p-prev'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,-3); else plannerStart=addDays(plannerStart,-28); render(); }
+  if(act==='undo'){
+    if(undoSnap){ applyData(JSON.parse(undoSnap)); hideToast(); changed(); render(); }
+  }
+  else if(act==='toast-close'){ hideToast(); }
+  else if(act==='p-prev'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,-3); else plannerStart=addDays(plannerStart,-28); render(); }
   else if(act==='p-next'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,3); else plannerStart=addDays(plannerStart,28); render(); }
   else if(act==='p-today'){ plannerStart=addDays(monday(today),-7); plMonthStart=shiftMonth(ymOf(today),-1); render(); }
   else if(act==='p-mode-month'){ if(plMode!=='month'){ plMonthStart=shiftMonth(ymOf(addDays(plannerStart,3)),0); plMode='month'; render(); } }
@@ -934,10 +1195,18 @@ document.addEventListener('click', function(e){
   else if(act==='t-today'){ weekAnchor=monday(today); tsMonth=ymOf(today); noteKey=null; render(); }
   else if(act==='t-mode-month'){ if(tsMode!=='month'){ tsMonth=ymOf(addDays(weekAnchor,3)); tsMode='month'; noteKey=null; render(); } }
   else if(act==='t-mode-week'){ if(tsMode!=='week'){ weekAnchor=firstWeekOf(tsMonth); tsMode='week'; noteKey=null; render(); } }
+  else if(act==='t-weekends'){ state.settings.hideWeekends=!state.settings.hideWeekends; changed(); render(); }
   else if(act==='eye'){ setMasked(!masked); render(); }
-  else if(act==='lock'){ setMasked(true); setUnlocked(false); pwChange=false; noteKey=null; editing=null; render(); window.scrollTo(0,0); }
-  else if(act==='pw-change'){ pwChange=true; render(); var pc=$('#pwc'); if(pc) pc.focus(); }
+  else if(act==='lock'){ setUnlocked(false); pwChange=false; noteKey=null; editing=null; showForm=false; render(); window.scrollTo(0,0); }
+  else if(act==='pw-change'){ pwChange=true; render(); var pc=$('#pwc')||$('#pwn1'); if(pc) pc.focus(); }
   else if(act==='pw-cancel'){ pwChange=false; render(); }
+  else if(act==='pw-remove'){
+    askConfirm('Remove the password?', 'Solo Planner will open without asking for a password in this browser.', 'Remove password', function(){
+      LS.del(PWKEY); setUnlocked(true); pwChange=false; render();
+    });
+  }
+  else if(act==='cl-dismiss'){ LS.set('solo-planner-checklist','1'); render(); }
+  else if(act==='retry-save'){ persist='dirty'; flush(false); }
   else if(act==='r-prev'){ shiftPeriod(-1); render(); }
   else if(act==='r-next'){ shiftPeriod(1); render(); }
   else if(act==='r-now'){ repAnchor=new Date(today); render(); }
@@ -948,12 +1217,14 @@ document.addEventListener('click', function(e){
   else if(act==='cf-no'){ closeConfirm(false); }
   else if(act==='wk-clear'){
     var cdays=weekDays(), cw=tsMode==='month'?'month':'week', c0=cdays[0], c1=cdays[cdays.length-1];
-    askConfirm('Clear this '+cw+'?', 'This deletes every time entry and note from '+fmtDay(c0)+' to '+fmtDay(c1)+' '+c1.getFullYear()+', for all assignments. This cannot be undone.', 'Clear '+cw, function(){
+    askConfirm('Clear this '+cw+'?', 'This deletes every time entry and note from '+fmtDay(c0)+' to '+fmtDayY(c1)+', for all clients. You can undo it right after.', 'Clear '+cw, function(){
+      var snap=snapshot();
       weekDays().forEach(function(d){ state.assignments.forEach(function(a){ delete state.entries[a.id+'|'+iso(d)]; delete state.notes[a.id+'|'+iso(d)]; }); });
-      noteKey=null; changed(); render();
+      noteKey=null; changed(); render(); toast('Cleared this '+cw, snap);
     });
   }
-  else if(act==='goto-assign'){ location.hash='#assignments'; }
+  else if(act==='goto-assign'){ showForm=true; location.hash='#assignments'; if(view==='assignments') render(); }
+  else if(act==='add-client'){ editing=null; showForm=true; render(); var nm=$('#f-name'); if(nm) nm.focus(); }
   else if(act==='fs-new'){ pickNew(); }
   else if(act==='fs-open'){ pickOpen(); }
   else if(act==='fs-reconnect'){ reconnect(); }
@@ -971,55 +1242,71 @@ document.addEventListener('click', function(e){
     });
   }
   else if(act==='example'){ loadExample(); changed(); render(); }
-  else if(act==='cancel-edit'){ editing=null; render(); }
+  else if(act==='cancel-edit'){ editing=null; showForm=false; render(); }
   else if(act==='clear'){
-    askConfirm('Delete all data?', 'This deletes every assignment, planned day, time entry, note and payment in '+(fileName||'this planner')+'. This cannot be undone. Use Export copy first if you want a backup.', 'Delete everything', function(){
-      state.assignments=[]; state.plan={}; state.entries={}; state.payments={}; state.notes={}; editing=null; changed(); render();
+    askConfirm('Delete all data?', 'This deletes every client, planned day, time entry, note, invoice and payment in '+(fileName||'this planner')+'. You can undo it right after, or use Export copy first for a backup.', 'Delete everything', function(){
+      var snap=snapshot();
+      state.assignments=[]; state.plan={}; state.entries={}; state.payments={}; state.notes={}; state.invoices={}; editing=null; showForm=false; changed(); render(); toast('All data deleted', snap);
     });
   }
-  else if(t.hasAttribute('data-edit')){ editing=t.getAttribute('data-edit'); render(); window.scrollTo(0,0); }
+  else if(t.hasAttribute('data-edit')){ editing=t.getAttribute('data-edit'); showForm=true; render(); window.scrollTo(0,0); var nm2=$('#f-name'); if(nm2) nm2.focus(); }
   else if(t.hasAttribute('data-del')){
-    var id=t.getAttribute('data-del'), da=state.assignments.filter(function(x){ return x.id===id; })[0]; if(!da) return;
-    askConfirm('Delete “'+da.name+'”?', 'This deletes the assignment and all its planned days, time entries, notes and payments. This cannot be undone.', 'Delete assignment', function(){
-      removeAssignment(id); if(editing===id) editing=null; changed(); render();
+    var id=t.getAttribute('data-del'), da=byId(id); if(!da) return;
+    askConfirm('Delete “'+da.name+'”?', 'This deletes the client and all its planned days, time entries, notes, invoices and payments. You can undo it right after.', 'Delete client', function(){
+      var snap=snapshot();
+      removeAssignment(id); if(editing===id) editing=null; changed(); render(); toast('“'+da.name+'” deleted', snap);
     });
   }
   else if(t.hasAttribute('data-opennote')){ noteKey=t.getAttribute('data-opennote'); render(); var ta=$('[data-notetext]'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); } }
   else if(act==='note-close'){ noteKey=null; render(); }
   else if(t.hasAttribute('data-clearentry')){
-    var ck=t.getAttribute('data-clearentry'), ca=state.assignments.filter(function(x){ return x.id===ck.split('|')[0]; })[0], cd2=parse(ck.split('|')[1]);
-    askConfirm('Clear this entry?', 'This removes '+(ca?timeLabel(ca,state.entries[ck]||0)+' logged for '+ca.name:'the time logged')+' on '+fmtDow(cd2)+' '+fmtDay(cd2)+'. The note for that day is kept.', 'Clear entry', function(){
-      delete state.entries[ck]; changed(); render();
-    });
+    var ck=t.getAttribute('data-clearentry'), snapE=snapshot();
+    delete state.entries[ck]; changed(); render(); toast('Entry cleared', snapE);
   }
   else if(t.hasAttribute('data-resetrow')){
-    var rid=t.getAttribute('data-resetrow'), ra=state.assignments.filter(function(x){ return x.id===rid; })[0];
-    askConfirm('Reset planned days?', 'This removes your changes to the planned days for '+(ra?ra.name:'this assignment')+' in the 14 weeks shown, and sets them back to the default. This cannot be undone.', 'Reset weeks', function(){
-      var i2; for(i2=0;i2<14;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; } changed(); render();
-    });
+    var rid=t.getAttribute('data-resetrow'), snapR=snapshot(), i2;
+    for(i2=0;i2<14;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; }
+    changed(); render(); toast('Planned days reset to the default', snapR);
   }
-  else if(t.hasAttribute('data-fill')){ fillFromPlan(t.getAttribute('data-fill')); changed(); render(); }
+  else if(t.hasAttribute('data-fill')){ var snapF=snapshot(); fillFromPlan(t.getAttribute('data-fill'), weekDays()); changed(); render(); toast('Filled from plan', snapF); }
+  else if(t.hasAttribute('data-tfillweek')){
+    var wdays=[], wi; for(wi=0;wi<7;wi++) wdays.push(addDays(monday(today),wi));
+    var snapW=snapshot(); fillFromPlan(t.getAttribute('data-tfillweek'), wdays); changed(); render(); toast('Filled from plan', snapW);
+  }
   else if(t.hasAttribute('data-full')){
-    var p=t.getAttribute('data-full').split('|'), a=state.assignments.filter(function(x){ return x.id===p[0]; })[0];
-    if(a){ state.payments[p[0]+'|'+p[1]]={ amount:round2(monthStats(a,p[1]).L), date:todayISO }; changed(); render(); }
+    var p=t.getAttribute('data-full').split('|'), a=byId(p[0]), snapP=snapshot();
+    if(a){ state.payments[p[0]+'|'+p[1]]={ amount:round2(monthStats(a,p[1]).L), date:todayISO }; changed(); renderKeepFocus(); toast('Marked as received', snapP); }
+  }
+  else if(t.hasAttribute('data-step')){
+    var sp=t.getAttribute('data-step').split('|'), sa=byId(sp[0]);
+    if(sa){ var cq=state.entries[sa.id+'|'+todayISO]||0, stp=sa.rateType==='day'?0.5:1; setEntry(sa,todayISO,cq+Number(sp[1])*stp); renderKeepFocus(); }
+  }
+  else if(t.hasAttribute('data-set')){
+    var ss=t.getAttribute('data-set').split('|'), sb=byId(ss[0]);
+    if(sb){ setEntry(sb,ss[1],parseFloat(ss[2])); renderKeepFocus(); }
+  }
+  else if(t.hasAttribute('data-cycle')){
+    var cy=t.getAttribute('data-cycle').split('|'), ca=byId(cy[0]);
+    if(ca){ var q0=state.entries[cy[0]+'|'+cy[1]]||0; setEntry(ca,cy[1], q0===0 ? 1 : (q0>=1 ? 0.5 : 0)); renderKeepFocus(); }
   }
 });
 
 document.addEventListener('change', function(e){
   var t=e.target;
   if(t.hasAttribute('data-plan')){
-    var k=t.getAttribute('data-plan'), p=k.split('|'), a=state.assignments.filter(function(x){ return x.id===p[0]; })[0]; if(!a) return;
+    var k=t.getAttribute('data-plan'), p=k.split('|'), a=byId(p[0]); if(!a) return;
     var blank=t.value.trim()==='';
     var v=blank?defaultWeek(a,p[1]):Math.min(7,Math.max(0,round2(num(t.value))));
     if(blank||v===defaultWeek(a,p[1])) delete state.plan[k]; else state.plan[k]=v;
     t.value=planVal(a,p[1]); t.className='cell l'+Math.min(5,Math.ceil(v));
     refreshPlannerTotals(); changed();
   } else if(t.hasAttribute('data-entry')){
-    var k2=t.getAttribute('data-entry'), a2=state.assignments.filter(function(x){ return x.id===k2.split('|')[0]; })[0]; if(!a2) return;
+    var k2=t.getAttribute('data-entry'), a2=byId(k2.split('|')[0]); if(!a2) return;
     var max=a2.rateType==='day'?1:24, v2=Math.min(max,Math.max(0,round2(num(t.value))));
     if(v2) state.entries[k2]=v2; else delete state.entries[k2];
     t.value=fmtN(v2); var ntl=$('[data-notetime="'+k2+'"]'); if(ntl) ntl.textContent=timeLabel(a2,v2);
-    refreshTimesheetTotals(); changed();
+    changed();
+    if(view==='today') renderKeepFocus(); else refreshTimesheetTotals();
   } else if(t.hasAttribute('data-notetext')){
     var nk=t.getAttribute('data-notetext'), nv=t.value.trim();
     if(nv) state.notes[nk]=nv; else delete state.notes[nk];
@@ -1028,9 +1315,15 @@ document.addEventListener('change', function(e){
   } else if(t.hasAttribute('data-rec')){
     var k3=t.getAttribute('data-rec'), amt=Math.max(0,round2(num(t.value)));
     if(amt>0){ var old=state.payments[k3]; state.payments[k3]={ amount:amt, date: old&&old.date?old.date:todayISO }; } else delete state.payments[k3];
-    changed(); render();
+    changed(); renderKeepFocus();
   } else if(t.hasAttribute('data-recdate')){
-    var k4=t.getAttribute('data-recdate'); if(state.payments[k4]){ state.payments[k4].date=t.value||todayISO; changed(); render(); }
+    var k4=t.getAttribute('data-recdate'); if(state.payments[k4]){ state.payments[k4].date=t.value||todayISO; changed(); renderKeepFocus(); }
+  } else if(t.hasAttribute('data-invno') || t.hasAttribute('data-invsent')){
+    var ik=t.getAttribute('data-invno') || t.getAttribute('data-invsent');
+    var ci=state.invoices[ik] || { no:'', sent:'' };
+    if(t.hasAttribute('data-invno')) ci.no=t.value.trim(); else ci.sent=t.value;
+    if(!ci.no && !ci.sent) delete state.invoices[ik]; else state.invoices[ik]=ci;
+    changed(); renderKeepFocus();
   } else if(t.id==='t-month'){
     if(!/^\d{4}-\d{2}$/.test(t.value)) return;
     if(tsMode==='month') tsMonth=t.value; else weekAnchor=firstWeekOf(t.value);
@@ -1040,6 +1333,12 @@ document.addEventListener('change', function(e){
     weekAnchor=wm; noteKey=null; render();
   } else if(t.id==='r-filter'){
     repFilter=t.value; render();
+  } else if(t.id==='s-cap'){
+    state.settings.capacity=Math.min(7,Math.max(0.5,round2(num(t.value))||5)); changed(); render();
+  } else if(t.id==='s-loc'){
+    state.settings.locale=t.value; changed(); render();
+  } else if(t.id==='s-hw'){
+    state.settings.hideWeekends=t.checked; changed(); render();
   } else if(t.id==='f-amode'){
     var aw=$('#adays-wrap'); if(aw) aw.hidden=(t.value==='none');
     var ad=$('#f-adays'), pw=$('#f-pw'); if(ad && pw && t.value==='week' && !ad.value.trim()) ad.value=pw.value;
@@ -1053,51 +1352,55 @@ document.addEventListener('change', function(e){
   var f=t.files[0], r=new FileReader();
   r.onload=function(){ try{ var d=JSON.parse(r.result); if(!d || !Array.isArray(d.assignments)) throw new Error('bad'); }catch(err){ $('#banner').textContent='That file is not a Solo Planner data file.'; t.value=''; return; }
     t.value='';
-    askConfirm('Replace all data?', 'Everything here will be replaced with the contents of “'+f.name+'” ('+d.assignments.length+' assignment'+(d.assignments.length===1?'':'s')+'). This cannot be undone. Use Export copy first if you want a backup.', 'Replace data', function(){
-      applyData(d); changed(); render();
+    askConfirm('Replace all data?', 'Everything here will be replaced with the contents of “'+f.name+'” ('+d.assignments.length+' client'+(d.assignments.length===1?'':'s')+'). You can undo it right after, or use Export copy first for a backup.', 'Replace data', function(){
+      var snap=snapshot();
+      applyData(d); changed(); render(); toast('Data replaced', snap);
     });
   };
   r.readAsText(f);
 });
 
 document.addEventListener('submit', function(e){
+  if(e.target.id==='sform'){ e.preventDefault(); return; }
   if(e.target.id!=='aform') return;
   e.preventDefault();
-  var err=$('#f-err'), name=$('#f-name').value.trim(), rate=num($('#f-rate').value), start=$('#f-start').value, end=$('#f-end').value;
-  if(!name){ err.textContent='Give the assignment a name.'; return; }
-  if(rate<=0){ err.textContent='Enter a rate above zero.'; return; }
-  if(!start){ err.textContent='Pick a start date.'; return; }
-  if(end && end<start){ err.textContent='The end date is before the start date.'; return; }
-  var amode=$('#f-amode').value, adays=Math.max(0,num($('#f-adays').value));
-  if(amode!=='none' && adays<=0){ err.textContent='Enter how many days the allowance is.'; return; }
+  ['name','rate','start','end','adays'].forEach(function(k){ fieldErr(k,''); });
+  var name=$('#f-name').value.trim(), rate=num($('#f-rate').value), start=$('#f-start').value, end=$('#f-end').value;
+  var amode=$('#f-amode').value, adays=Math.max(0,num($('#f-adays').value)), errs=[];
+  if(!name) errs.push(['name','Give the client a name.']);
+  if(rate<=0) errs.push(['rate','Enter a rate above zero.']);
+  if(!start) errs.push(['start','Pick a start date.']);
+  if(end && start && end<start) errs.push(['end','The end date is before the start date.']);
+  if(amode!=='none' && adays<=0) errs.push(['adays','Enter how many contract days the client gave you.']);
+  if(errs.length){ errs.forEach(function(x){ fieldErr(x[0],x[1]); }); var first=$('#f-'+errs[0][0]); if(first) first.focus(); return; }
   var rec={ allowMode:amode, allowDays:amode==='none'?0:adays, name:name, rateType:$('#f-type').value, rate:rate, currency:$('#f-cur').value, start:start, end:end,
     color:$('#f-color').value, perWeek:Math.min(7,Math.max(0,num($('#f-pw').value))), hoursPerDay:Math.min(24,Math.max(1,num($('#f-hpd').value)||8)), terms:Math.max(0,Math.round(num($('#f-terms').value))) };
   if(editing){
-    var a=state.assignments.filter(function(x){ return x.id===editing; })[0];
+    var a=byId(editing);
     if(a) Object.keys(rec).forEach(function(k){ a[k]=rec[k]; });
     editing=null;
   } else {
     rec.id=uid();
     state.assignments.push(rec);
   }
-  changed(); render();
+  showForm=false; changed(); render(); toast('Client saved');
 });
 
-var VIEWS=['planner','timesheet','income','reports','assignments'];
+var VIEWS=['today','planner','timesheet','income','reports','assignments'];
 document.addEventListener('submit', async function(e){
   var f=e.target;
   if(f.id==='lockform'){
     e.preventDefault();
-    var err=$('#pw-err'), p1=$('#pw1').value, mode=f.getAttribute('data-mode');
-    if(mode==='set'){
-      if(p1.length<4){ err.textContent='Use at least 4 characters.'; return; }
-      if(p1!==$('#pw2').value){ err.textContent='The passwords do not match.'; return; }
-      if(!(await pwSet(p1))){ err.textContent='This browser blocked saving the password. Check that site data is allowed.'; return; }
-      setUnlocked(true); render();
-    } else {
-      if(await pwCheck(p1)){ setUnlocked(true); render(); }
-      else { err.textContent='Wrong password.'; $('#pw1').value=''; $('#pw1').focus(); }
-    }
+    var err=$('#pw-err'), p1=$('#pw1').value;
+    if(await pwCheck(p1)){ setUnlocked(true); render(); }
+    else { err.textContent='Wrong password.'; $('#pw1').value=''; $('#pw1').focus(); }
+  } else if(f.id==='pwsetform'){
+    e.preventDefault();
+    var es=$('#pwc-err'), s1=$('#pwn1').value;
+    if(s1.length<4){ es.textContent='Use at least 4 characters.'; return; }
+    if(s1!==$('#pwn2').value){ es.textContent='The passwords do not match.'; return; }
+    if(!(await pwSet(s1))){ es.textContent='This browser blocked saving the password. Check that site data is allowed.'; return; }
+    setUnlocked(true); pwChange=false; render(); toast('Password set');
   } else if(f.id==='pwform'){
     e.preventDefault();
     var er=$('#pwc-err'), n1=$('#pwn1').value;
@@ -1105,18 +1408,19 @@ document.addEventListener('submit', async function(e){
     if(n1.length<4){ er.textContent='Use at least 4 characters.'; return; }
     if(n1!==$('#pwn2').value){ er.textContent='The new passwords do not match.'; return; }
     if(!(await pwSet(n1))){ er.textContent='Could not save the password.'; return; }
-    pwChange=false; render();
+    pwChange=false; render(); toast('Password changed');
   }
 });
 
 function route(){
   var h=location.hash.replace('#','');
-  view = VIEWS.indexOf(h)>-1 ? h : 'planner';
+  view = VIEWS.indexOf(h)>-1 ? h : 'today';
+  if(view!=='assignments'){ editing=null; showForm=false; }
   render();
 }
 window.addEventListener('hashchange', route);
 
-view = VIEWS.indexOf(location.hash.replace('#',''))>-1 ? location.hash.replace('#','') : 'planner';
+view = VIEWS.indexOf(location.hash.replace('#',''))>-1 ? location.hash.replace('#','') : 'today';
 setStatus();
 boot();
 })();
