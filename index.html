@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solo Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: top bar with tabs, one working view below; wide grids scroll inside their own container. */
+  --bg:#f2f4f6; --surface:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#dde3e8;
+  --accent:#0e6b66; --accent-ink:#ffffff; --accent-soft:#dff1ef;
+  --good:#17803d; --good-soft:#dcf3e4; --warn:#a15c07; --warn-soft:#fbeed3; --crit:#b42318; --crit-soft:#fbe0dd;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-num:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f161c; --surface:#17212a; --ink:#e6edf2; --muted:#93a3b0; --line:#28353f;
+    --accent:#4fc3bb; --accent-ink:#06201e; --accent-soft:#153a38;
+    --good:#55c47e; --good-soft:#14301f; --warn:#e0a64a; --warn-soft:#3a2a0d; --crit:#f2837a; --crit-soft:#3d1713;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#17212a; --ink:#e6edf2; --muted:#93a3b0; --line:#28353f;
+  --accent:#4fc3bb; --accent-ink:#06201e; --accent-soft:#153a38;
+  --good:#55c47e; --good-soft:#14301f; --warn:#e0a64a; --warn-soft:#3a2a0d; --crit:#f2837a; --crit-soft:#3d1713;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-body);-webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600}
+h2{font-size:20px}
+h3{font-size:15px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:18px 0 10px}
+header.top h1{font-size:18px;letter-spacing:.01em}
+#status{margin-left:auto;font-size:12px;color:var(--muted);font-family:var(--font-num)}
+#status.err{color:var(--crit)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.tab[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.ctl{display:flex;gap:6px;flex-wrap:wrap}
+.hint{color:var(--muted);margin:4px 0 14px;max-width:70ch;font-size:14px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--crit)}
+.btn.small{padding:3px 8px;font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%}
+table.grid th,table.grid td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+table.grid thead th{font-size:12px;font-weight:500;color:var(--muted);background:var(--surface)}
+table.grid tbody tr:last-child th,table.grid tbody tr:last-child td{border-bottom:0}
+th.sticky{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1;min-width:170px;max-width:220px;box-shadow:1px 0 0 var(--line)}
+th.rowh{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;font-weight:500;white-space:normal}
+th.rowh small{grid-column:2;color:var(--muted);font-weight:400;font-size:12px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+#f-color{width:56px;height:36px;padding:2px;cursor:pointer}
+.now{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+thead th.now{color:var(--accent);font-weight:600}
+.we{background:color-mix(in srgb,var(--muted) 8%,var(--surface))}
+input.cell{width:58px;text-align:center;font-family:var(--font-num);border:1px solid transparent;border-radius:6px;padding:6px 2px;background:transparent}
+input.cell:hover{border-color:var(--line)}
+input.cell:focus{border-color:var(--accent);background:var(--surface)}
+input.cell.l1{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+input.cell.l2{background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
+input.cell.l3{background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
+input.cell.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
+input.cell.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+table.grid td{position:relative}
+.x{position:absolute;top:1px;right:1px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;opacity:.6}
+.x:hover{color:var(--crit);opacity:1}
+.nb{position:absolute;bottom:1px;right:1px;border:0;background:none;cursor:pointer;color:var(--muted);font-size:12px;opacity:.45;padding:2px 4px;line-height:1}
+.nb:hover{opacity:1}
+.nb.on{color:var(--accent);opacity:1}
+tr.noterow td,tr.noterow th{background:color-mix(in srgb,var(--accent) 6%,var(--surface));text-align:left;white-space:normal}
+.noterow textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical}
+.noterow label{display:grid;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
+.nline{margin:8px 0;font-size:14px}
+td.tot small{display:block;color:var(--muted);font-size:11px}
+tr.sum th,tr.sum td{background:color-mix(in srgb,var(--muted) 6%,var(--surface));font-weight:500}
+.over{color:var(--crit);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:22px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tile .v{font-family:var(--font-num);font-size:22px;font-weight:500;margin-top:4px;line-height:1.3}
+.tile .v.none{color:var(--muted);font-size:18px}
+.tile.crit{border-color:var(--crit)}
+.tile.crit .v{color:var(--crit)}
+.tile small{display:block;color:var(--muted);margin-top:4px}
+.month{margin-bottom:20px}
+.month h3{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.month h3 .mt{font-family:var(--font-num);font-weight:400;color:var(--muted);font-size:13px}
+.month.cur h3::after{content:"This month";font-size:11px;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-weight:600;margin-left:8px;order:-1}
+table.inc th,table.inc td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
+table.inc th:first-child,table.inc td:first-child{text-align:left}
+table.inc thead th{font-size:12px;font-weight:500;color:var(--muted)}
+table.inc tbody tr:last-child td{border-bottom:0}
+table.inc td small{display:block;color:var(--muted);font-size:11px}
+.amtwrap{display:inline-flex;align-items:center;gap:4px}
+.amtwrap .cur{color:var(--muted)}
+input.amt{width:92px;text-align:right;font-family:var(--font-num);border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface)}
+input.dt{width:128px;border:1px solid var(--line);border-radius:6px;padding:2px 4px;font-size:12px;background:var(--surface)}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.idle{background:color-mix(in srgb,var(--muted) 14%,var(--surface));color:var(--muted)}
+.pill.info{background:var(--accent-soft);color:var(--accent)}
+form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+form.f label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+form.f input,form.f select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink)}
+form.f .row{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.err{color:var(--crit);font-size:13px}
+.alist{display:grid;gap:10px;margin-top:18px}
+.arow{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.arow .meta{color:var(--muted);font-size:13px}
+.empty{max-width:560px;margin:40px auto;text-align:center}
+.empty h2{margin-bottom:8px}
+.empty p{color:var(--muted)}
+.empty .ctl{justify-content:center;margin-top:16px}
+.banner{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.banner:empty{display:none}
+.foot{color:var(--muted);font-size:13px;max-width:80ch;margin-top:18px}
+@media (max-width:600px){
+  th.sticky{min-width:120px}
+  input.cell{width:48px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+body.locked nav.tabs,body.locked #status,body.locked #banner,body.locked #lockbtn,body.locked #eyebtn{display:none!important}
+dialog#confirm{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:20px 22px;width:calc(100% - 32px);max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+dialog#confirm::backdrop{background:rgba(10,16,22,.5)}
+dialog#confirm p{color:var(--muted);margin:8px 0 18px}
+dialog#confirm .ctl{justify-content:flex-end}
+.btn.danger.solid{background:var(--crit);border-color:var(--crit);color:#fff}
+table.grid.mgrid th:not(.sticky),table.grid.mgrid td{padding:4px 2px}
+table.grid.mgrid input.cell{width:40px;padding:6px 0}
+table.grid.mgrid .wk{border-left:1px solid var(--line)}
+/* Toolbars: view switch (segmented), period navigation (‹ label ›), Today; secondary actions in menus or below the table */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 6px}
+.toolbar .sp{flex:1 1 auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.seg button{border:0;background:none;padding:6px 12px;cursor:pointer;font-weight:500;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.navg{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.navg .ic{border:0;background:none;cursor:pointer;padding:4px 12px;font-size:18px;line-height:1.2;color:var(--muted)}
+.navg .ic:hover{color:var(--ink)}
+.navg .lbl,.navg input{font-weight:600;padding:5px 4px;border:0;background:transparent;color:var(--ink);text-align:center}
+.navg .lbl{min-width:9em;white-space:nowrap}
+details.menu{position:relative}
+details.menu>summary{list-style:none;user-select:none}
+details.menu>summary::-webkit-details-marker{display:none}
+details.menu .pop{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:4px;z-index:5;min-width:180px;display:grid}
+details.menu .pop button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--ink)}
+details.menu .pop button:hover{background:var(--accent-soft)}
+.hlink{border:0;background:none;padding:2px 4px;cursor:pointer;color:inherit;font:inherit;border-radius:4px}
+.hlink:hover{color:var(--accent);text-decoration:underline}
+button.pm{min-width:52px;border:1px solid transparent;border-radius:6px;padding:6px 4px;background:transparent;cursor:pointer;font-family:var(--font-num);color:var(--ink)}
+button.pm:hover{border-color:var(--accent)}
+button.pm.l0{color:var(--muted)}
+button.pm.l1{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+button.pm.l2{background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
+button.pm.l3{background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
+button.pm.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
+button.pm.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
+.tfoot{display:flex;justify-content:flex-end;margin-top:8px}
+input.mask{-webkit-text-security:disc}
+#eyebtn{display:inline-flex;align-items:center;gap:6px}
+#eyebtn svg{width:16px;height:16px;flex:none}
+form.lockf{grid-template-columns:1fr;max-width:340px;margin:18px auto 0;text-align:left}
+form.lockf .row{justify-content:center}
+select.sel{border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--surface);color:var(--ink);font-weight:500}
+.rsec{margin-top:22px}
+.rsec h3{margin-bottom:8px}
+table.inc td.note{text-align:left;white-space:normal;min-width:220px;max-width:480px}
+table.inc tr.rtot td{font-weight:600;background:color-mix(in srgb,var(--muted) 6%,var(--surface))}
+@media print{
+  :root,:root[data-theme="dark"],:root:not([data-theme="light"]){
+    --bg:#ffffff; --surface:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#dde3e8;
+    --accent:#0e6b66; --accent-ink:#ffffff; --accent-soft:#dff1ef; color-scheme:light;
+  }
+  header.top,nav.tabs,#banner,.noprint{display:none!important}
+  body{background:#fff;font-size:12px}
+  .wrap{max-width:none;padding:0}
+  .scroll{overflow:visible;border:0}
+  .tile,.rsec{break-inside:avoid}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Solo Planner</h1>
+    <span id="status" role="status" aria-live="polite"></span>
+    <button class="btn small" id="eyebtn" data-act="eye"></button>
+    <button class="btn small" id="lockbtn" data-act="lock">Lock</button>
+  </header>
+  <div id="banner"></div>
+  <input type="file" id="impfile" accept=".json,application/json" hidden>
+  <nav class="tabs" aria-label="Sections">
+    <button class="tab" data-view="planner">Planner</button>
+    <button class="tab" data-view="timesheet">Timesheet</button>
+    <button class="tab" data-view="income">Income</button>
+    <button class="tab" data-view="reports">Reports</button>
+    <button class="tab" data-view="assignments">Assignments</button>
+  </nav>
+  <main id="main"></main>
+</div>
+<dialog id="confirm" aria-labelledby="cf-title" aria-describedby="cf-msg">
+  <h3 id="cf-title"></h3>
+  <p id="cf-msg"></p>
+  <div class="ctl"><button class="btn" data-act="cf-no" autofocus>Cancel</button><button class="btn danger solid" data-act="cf-yes" id="cf-yes"></button></div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- helpers ---------- */
+var $ = function(s, el){ return (el||document).querySelector(s); };
+var pad = function(n){ return String(n).padStart(2,'0'); };
+var iso = function(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
+var parse = function(s){ var p=s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); };
+var addDays = function(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; };
+var monday = function(d){ return addDays(d, -((d.getDay()+6)%7)); };
+var today = new Date(); today.setHours(0,0,0,0);
+var todayISO = iso(today);
+var ymOf = function(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1); };
+var uid = function(){ return Math.random().toString(36).slice(2,9); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var masked = (function(){ try{ return sessionStorage.getItem('solo-planner-show')!=='1'; }catch(e){ return true; } })();
+function setMasked(on){ masked=on; try{ if(on) sessionStorage.removeItem('solo-planner-show'); else sessionStorage.setItem('solo-planner-show','1'); }catch(e){} }
+var curSym = function(cur){ try{ var p=new Intl.NumberFormat('en-GB',{style:'currency',currency:cur}).formatToParts(0).filter(function(x){ return x.type==='currency'; })[0]; return p?p.value:cur+' '; }catch(e){ return cur+' '; } };
+var mk = function(){ return masked?' mask':''; };
+var money = function(v,cur){ if(masked) return curSym(cur)+'••••'; try{ return new Intl.NumberFormat('en-GB',{style:'currency',currency:cur,minimumFractionDigits:0,maximumFractionDigits:2}).format(v); }catch(e){ return cur+' '+v.toFixed(2); } };
+var num = function(v){ var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:0; };
+var fmtN = function(v){ return v ? String(Math.round(v*100)/100) : ''; };
+var round2 = function(v){ return Math.round(v*100)/100; };
+var fmtDay = function(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); };
+var fmtDow = function(d){ return d.toLocaleDateString('en-GB',{weekday:'short'}); };
+var monthLabel = function(ym){ var p=ym.split('-').map(Number); return new Date(p[0],p[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'}); };
+var COLORS = ['#0e6b66','#7c4dbd','#c2570c','#1f6fb2','#a1306b','#5c7a1f','#b3261e','#8a6d00','#37474f','#00838f'];
+
+/* ---------- state ---------- */
+var state = { v:1, assignments:[], plan:{}, entries:{}, payments:{}, notes:{} };
+var view = 'planner';
+var plannerStart = addDays(monday(today), -7);
+var plMode = 'week';                                  // Planner view: 'week' or 'month'
+var plMonthStart = ymOf(new Date(today.getFullYear(), today.getMonth()-1, 1)); // first month shown in month view
+var weekAnchor = monday(today);
+var tsMode = 'week';          // Timesheet view: 'week' or 'month'
+var tsMonth = ymOf(today);    // month shown in month view (YYYY-MM)
+var editing = null;
+/* One confirmation dialog for every action that deletes or replaces data. Cancel has focus by default. */
+var pendingConfirm = null;
+function askConfirm(title, msg, yesLabel, fn){
+  var dlg=$('#confirm');
+  $('#cf-title').textContent=title; $('#cf-msg').textContent=msg; $('#cf-yes').textContent=yesLabel;
+  pendingConfirm=fn;
+  if(dlg.showModal){ if(!dlg.open) dlg.showModal(); }
+  else if(window.confirm(title+'\n\n'+msg)){ pendingConfirm=null; fn(); }
+}
+$('#confirm').addEventListener('close', function(){ pendingConfirm=null; }); // Esc cancels
+function closeConfirm(run){
+  var fn=pendingConfirm, dlg=$('#confirm'); pendingConfirm=null;
+  if(dlg.open) dlg.close();
+  if(run && fn) fn();
+}
+var noteKey = null;
+var repType = 'month', repAnchor = new Date(today), repFilter = 'all';
+var loaded = false;
+
+/* ---------- password lock (screen lock only; the data file itself is not encrypted) ---------- */
+var PWKEY = 'solo-planner-pw', SESSKEY = 'solo-planner-unlocked';
+var pwChange = false;
+function pwGet(){ try{ return JSON.parse(localStorage.getItem(PWKEY)||'null'); }catch(e){ return null; } }
+function pwPut(o){ try{ localStorage.setItem(PWKEY, JSON.stringify(o)); return true; }catch(e){ return false; } }
+var locked = (function(){ try{ return !(pwGet() && sessionStorage.getItem(SESSKEY)==='1'); }catch(e){ return true; } })();
+function setUnlocked(on){ locked=!on; try{ if(on) sessionStorage.setItem(SESSKEY,'1'); else sessionStorage.removeItem(SESSKEY); }catch(e){} }
+function hex(buf){ return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join(''); }
+async function hashPw(pw,salt){
+  if(window.crypto && crypto.subtle){
+    var enc=new TextEncoder();
+    var key=await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+    var bits=await crypto.subtle.deriveBits({ name:'PBKDF2', salt:enc.encode(salt), iterations:200000, hash:'SHA-256' }, key, 256);
+    return 'p2:'+hex(bits);
+  }
+  var h=2166136261, s=salt+'|'+pw, r, i;
+  for(r=0;r<2000;r++) for(i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; }
+  return 'f1:'+h.toString(16);
+}
+async function pwCheck(pw){ var o=pwGet(); if(!o) return false; return (await hashPw(pw,o.salt))===o.hash; }
+async function pwSet(pw){ var salt=hex(crypto.getRandomValues(new Uint8Array(16)).buffer); return pwPut({ salt:salt, hash:await hashPw(pw,salt) }); }
+function renderLock(){
+  if(!pwGet()) return '<section class="card empty"><h2>Set a password</h2><p>You will enter it each time you open Solo Planner in this browser.</p>'+
+    '<form class="f lockf" id="lockform" data-mode="set" novalidate>'+
+    '<label>Password<input type="password" id="pw1" autocomplete="new-password" required></label>'+
+    '<label>Repeat password<input type="password" id="pw2" autocomplete="new-password" required></label>'+
+    '<div class="row"><button class="btn primary" type="submit">Set password</button></div><span class="err" id="pw-err" role="alert"></span></form></section>';
+  return '<section class="card empty"><h2>Solo Planner is locked</h2><p>Enter your password to continue.</p>'+
+    '<form class="f lockf" id="lockform" data-mode="login" novalidate>'+
+    '<label>Password<input type="password" id="pw1" autocomplete="current-password" required></label>'+
+    '<div class="row"><button class="btn primary" type="submit">Unlock</button></div><span class="err" id="pw-err" role="alert"></span></form></section>';
+}
+function pwCardHTML(){
+  if(!pwChange) return '<section class="card" style="margin-top:16px"><h3>Password</h3><p class="hint">The password locks this page in this browser. It does not encrypt the data file.</p><div class="ctl"><button class="btn small" data-act="pw-change">Change password</button><button class="btn small" data-act="lock">Lock now</button></div></section>';
+  return '<section class="card" style="margin-top:16px"><h3>Change password</h3><form class="f" id="pwform" novalidate>'+
+    '<label>Current password<input type="password" id="pwc" autocomplete="current-password"></label>'+
+    '<label>New password<input type="password" id="pwn1" autocomplete="new-password"></label>'+
+    '<label>Repeat new password<input type="password" id="pwn2" autocomplete="new-password"></label>'+
+    '<div class="row"><button class="btn primary" type="submit">Save password</button><button class="btn" type="button" data-act="pw-cancel">Cancel</button><span class="err" id="pwc-err" role="alert"></span></div></form></section>';
+}
+
+/* ---------- persistence: one JSON file on disk ---------- */
+var supportsFS = !!(window.showSaveFilePicker && window.showOpenFilePicker);
+var fh = null, fileName = '', lastText = null, connected = false, needPerm = false;
+var persist = 'init', saveTimer = null, saving = false, again = false, conflict = false;
+var JSON_TYPES = [{ description:'JSON data file', accept:{'application/json':['.json']} }];
+
+function idb(){ return new Promise(function(res,rej){ var r=indexedDB.open('solo-planner',1); r.onupgradeneeded=function(){ r.result.createObjectStore('h'); }; r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }); }
+function idbGet(k){ return idb().then(function(db){ return new Promise(function(res,rej){ var q=db.transaction('h').objectStore('h').get(k); q.onsuccess=function(){ res(q.result); }; q.onerror=function(){ rej(q.error); }; }); }); }
+function idbSet(k,v){ return idb().then(function(db){ return new Promise(function(res,rej){ var q=db.transaction('h','readwrite').objectStore('h').put(v,k); q.onsuccess=function(){ res(); }; q.onerror=function(){ rej(q.error); }; }); }); }
+
+function setStatus(){
+  var el=$('#status'), t='', err=false;
+  if(!supportsFS){ t='Memory only. Use Export to keep your data.'; err=true; }
+  else if(!connected){ t=''; }
+  else if(persist==='dirty'){ t=fileName+' · unsaved changes…'; }
+  else if(persist==='saving'){ t=fileName+' · saving…'; }
+  else if(persist==='saved'){ t=fileName+' · saved'; }
+  else if(persist==='conflict'){ t=fileName+' · changed elsewhere'; err=true; }
+  else if(persist==='error'){ t='Could not write '+fileName+'. Edit again to retry, or reconnect the file.'; err=true; }
+  el.textContent=t; el.className=err?'err':'';
+}
+function applyData(d){
+  state.assignments=d.assignments||[]; state.plan=d.plan||{}; state.entries=d.entries||{}; state.payments=d.payments||{}; state.notes=d.notes||{};
+}
+function serialize(){ return JSON.stringify(Object.assign({ savedAt:new Date().toISOString() }, state), null, 1); }
+async function readFromHandle(){
+  var f=await fh.getFile(); var txt=await f.text(); fileName=f.name;
+  if(txt.trim()){ applyData(JSON.parse(txt)); lastText=txt; } else { lastText=''; }
+}
+async function connect(h, isNew){
+  fh=h; fileName=h.name;
+  try{ await idbSet('file',h); }catch(e){}
+  try{
+    if(!isNew) await readFromHandle(); else lastText='';
+    connected=true; needPerm=false; conflict=false; persist='saved';
+    if(isNew) await flush(true);
+  }catch(e){ persist='error'; connected=true; }
+  loaded=true; setStatus(); render();
+}
+function scheduleSave(){
+  if(!fh || !connected || conflict) return;
+  clearTimeout(saveTimer); persist='dirty'; setStatus();
+  saveTimer=setTimeout(function(){ flush(false); }, 600);
+}
+async function flush(force){
+  if(!fh) return;
+  if(saving){ again=true; return; }
+  saving=true; persist='saving'; setStatus();
+  try{
+    if(!force){
+      var cur=await (await fh.getFile()).text();
+      if(lastText!==null && cur.trim() && cur!==lastText){ conflict=true; persist='conflict'; saving=false; setStatus(); render(); return; }
+    }
+    var out=serialize(), w=await fh.createWritable();
+    await w.write(out); await w.close();
+    lastText=out; persist='saved';
+  }catch(e){ persist='error'; }
+  saving=false; setStatus();
+  if(again){ again=false; flush(false); }
+}
+async function boot(){
+  if(!supportsFS){ loaded=true; setStatus(); render(); return; }
+  try{
+    var h=await idbGet('file');
+    if(h){
+      fh=h; fileName=h.name;
+      var p=await h.queryPermission({mode:'readwrite'});
+      if(p==='granted'){ await connect(h,false); return; }
+      needPerm=true;
+    }
+  }catch(e){}
+  loaded=true; setStatus(); render();
+}
+async function pickNew(){
+  try{ var h=await window.showSaveFilePicker({ suggestedName:'solo-planner-data.json', types:JSON_TYPES }); await connect(h,true); }catch(e){}
+}
+async function pickOpen(){
+  try{ var r=await window.showOpenFilePicker({ types:JSON_TYPES, mode:'readwrite' }); await connect(r[0],false); }catch(e){}
+}
+async function reconnect(){
+  try{ var p=await fh.requestPermission({mode:'readwrite'}); if(p==='granted') await connect(fh,false); }catch(e){}
+}
+function download(name,text,type){
+  var blob=new Blob([text],{type:type}), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+}
+function exportJSON(){ download('solo-planner-'+todayISO+'.json', serialize(), 'application/json'); }
+function changed(){ scheduleSave(); }
+window.addEventListener('focus', async function(){
+  if(!fh || !connected || conflict || saving || persist==='dirty') return;
+  try{
+    var txt=await (await fh.getFile()).text();
+    if(txt.trim() && txt!==lastText){ applyData(JSON.parse(txt)); lastText=txt; render(); }
+  }catch(e){}
+});
+
+/* ---------- domain ---------- */
+var unit = function(a){ return a.rateType==='day' ? 'd' : 'h'; };
+var rateLabel = function(a){ return money(a.rate,a.currency)+(a.rateType==='day'?' / day':' / hour'); };
+var inRange = function(a,d){ return d>=a.start && (!a.end || d<=a.end); };
+var weekOverlaps = function(a,w){ var we=iso(addDays(parse(w),6)); return a.start<=we && (!a.end || a.end>=w); };
+var defaultWeek = function(a,w){ return weekOverlaps(a,w) ? a.perWeek : 0; };
+var plannedDays = function(a,w){ var k=a.id+'|'+w; return (k in state.plan) ? state.plan[k] : defaultWeek(a,w); };
+var planVal = function(a,w){ var k=a.id+'|'+w, v=plannedDays(a,w); return (k in state.plan && v===0) ? '0' : fmtN(v); };
+var dayValue = function(a){ return a.rateType==='day' ? a.rate : a.rate*a.hoursPerDay; };
+function plannedOnDate(a,dISO){
+  var d=parse(dISO), dow=(d.getDay()+6)%7;
+  if(dow>4) return 0;
+  var w=iso(monday(d)), days=plannedDays(a,w);
+  if(!days) return 0;
+  var n=0, i;
+  for(i=0;i<5;i++){ if(inRange(a, iso(addDays(parse(w),i)))) n++; }
+  if(n===0){ n=5; } else if(!inRange(a,dISO)){ return 0; }
+  return days/n;
+}
+var r1 = function(v){ return String(Math.round(v*100)/100); };
+function dayEq(a,q){ return a.rateType==='day' ? q : q/a.hoursPerDay; }
+function usedDays(a,w){
+  var t=0,i; for(i=0;i<7;i++) t+=state.entries[a.id+'|'+iso(addDays(parse(w),i))]||0;
+  return dayEq(a,t);
+}
+function usedBetween(a,from,to){
+  var t=0; Object.keys(state.entries).forEach(function(k){ var p=k.split('|'); if(p[0]===a.id && p[1]>=from && p[1]<=to) t+=state.entries[k]; });
+  return dayEq(a,t);
+}
+/* Days bank. Allowance is set per assignment: per week, per month (unused days roll over, no expiry) or one total pot. */
+function bankAt(a,w){
+  var mode=a.allowMode||'none', n=a.allowDays||0; if(mode==='none' || n<=0) return null;
+  var wEnd=iso(addDays(parse(w),6)), k;
+  if(mode==='total'){ var u=usedBetween(a,'0000-01-01',wEnd); return { mode:mode, carried:null, allow:n, used:u, balance:n-u }; }
+  if(mode==='week'){
+    var first=iso(monday(parse(a.start))), carried=0;
+    for(k=first;k<w;k=iso(addDays(parse(k),7))) carried+=(weekOverlaps(a,k)?n:0)-usedDays(a,k);
+    var al=weekOverlaps(a,w)?n:0, us=usedDays(a,w);
+    return { mode:mode, carried:carried, allow:al, used:us, balance:carried+al-us };
+  }
+  var ref=parse(w); ref=addDays(ref,4); var ym=ymOf(ref), sp=a.start.slice(0,7), c=0, m=sp;
+  function monthEnd(y){ var p=y.split('-').map(Number); return iso(new Date(p[0],p[1],0)); }
+  function nextM(y){ var p=y.split('-').map(Number); return ymOf(new Date(p[0],p[1],1)); }
+  function mOverlap(y){ return a.start<=monthEnd(y) && (!a.end || a.end>=y+'-01'); }
+  while(m<ym){ c+=(mOverlap(m)?n:0)-usedBetween(a,m+'-01',monthEnd(m)); m=nextM(m); }
+  var alm=mOverlap(ym)?n:0, usm=usedBetween(a,ym+'-01',wEnd<monthEnd(ym)?wEnd:monthEnd(ym));
+  return { mode:mode, carried:c, allow:alm, used:usm, balance:c+alm-usm };
+}
+function bankWeek(){ return tsMode==='month' ? iso(monday(monthEndDate(tsMonth))) : iso(weekAnchor); }
+function bankHTML(){
+  var w=bankWeek(), rows='';
+  state.assignments.forEach(function(a){
+    var b=bankAt(a,w); if(!b) return;
+    var basis=b.mode==='week'?'this week':(b.mode==='month'?'this month':'total pot');
+    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td><td>'+basis+'</td><td class="num">'+(b.carried===null?'—':r1(b.carried))+'</td><td class="num">'+r1(b.allow)+'</td><td class="num">'+r1(b.used)+'</td><td class="num'+(b.balance<-0.004?' over':'')+'"><strong>'+r1(b.balance)+'</strong></td></tr>';
+  });
+  if(!rows) return '<p class="foot" style="margin:0">No day allowance set. Edit an assignment in the Assignments tab to track days left and rollover.</p>';
+  return '<h3 style="margin-bottom:8px">Days bank up to '+fmtDay(addDays(parse(w),6))+' '+addDays(parse(w),6).getFullYear()+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Basis</th><th>Carried in</th><th>Allowance</th><th>Used</th><th>Days left</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="foot" style="margin:8px 0 0">Unused days roll over to later periods with no expiry. A negative number means you used more days than the allowance.</p>';
+}
+
+function monthStats(a,ym){
+  var p=ym.split('-').map(Number), n=new Date(p[0],p[1],0).getDate();
+  var qty=0,L=0,F=0,P=0,Fq=0,Fd=0,i;
+  for(i=1;i<=n;i++){
+    var dI=ym+'-'+pad(i);
+    var q=state.entries[a.id+'|'+dI]||0, la=q*a.rate, pd=plannedOnDate(a,dI), pa=pd*dayValue(a);
+    qty+=q; L+=la; P+=pa;
+    if(dI<=todayISO){ F+=la; Fq+=q; Fd+=dayEq(a,q); }
+    else { F+=pa; Fq+=(a.rateType==='hour' ? pd*a.hoursPerDay : pd); Fd+=pd; }
+  }
+  var rec=state.payments[a.id+'|'+ym]; var R=rec?rec.amount:0;
+  var endD=new Date(p[0],p[1],0);
+  return { qty:qty,L:L,F:F,P:P,R:R,rec:rec,Fq:Fq,Fd:Fd, end:iso(endD), due:iso(addDays(endD,a.terms)) };
+}
+function statusOf(s){
+  var done = s.end < todayISO;
+  if(!done){ return (s.L>0||s.F>0) ? ['info', s.end>=todayISO && s.L>0 ? 'In progress' : 'Planned'] : ['idle','—']; }
+  if(s.L<=0.004) return ['idle','—'];
+  if(s.R >= s.L-0.005) return ['good','Received'];
+  if(s.R>0 && todayISO<=s.due) return ['warn','Part received'];
+  if(todayISO>s.due) return ['crit', s.R>0 ? 'Overdue (part)' : 'Overdue'];
+  return ['warn','Awaiting payment'];
+}
+function addTo(map,cur,v){ map[cur]=(map[cur]||0)+v; }
+function curLines(map){
+  var keys=Object.keys(map).filter(function(k){ return Math.abs(map[k])>0.004; });
+  if(!keys.length) return '<div class="v none">—</div>';
+  return keys.map(function(k){ return '<div class="v">'+money(map[k],k)+'</div>'; }).join('');
+}
+
+/* ---------- views ---------- */
+function emptyState(){
+  return '<section class="card empty"><h2>Add your first assignment</h2>'+
+    '<p>An assignment is a client engagement with a rate and dates. Once you have one, the planner, timesheet and income views fill in.</p>'+
+    '<div class="ctl"><button class="btn primary" data-act="goto-assign">Add assignment</button><button class="btn" data-act="example">Load example data</button></div></section>';
+}
+
+/* Planner month view: read-only overview worked out from the weekly plan; a month opens its weeks for editing. */
+function shortMonth(ym){ return parse(ym+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'}); }
+function monthPlanned(a,ym){ var n=monthEndDate(ym).getDate(), t=0, i; for(i=1;i<=n;i++) t+=plannedOnDate(a, ym+'-'+pad(i)); return t; }
+function workdaysIn(ym){ var n=monthEndDate(ym).getDate(), c=0, i, g; for(i=1;i<=n;i++){ g=parse(ym+'-'+pad(i)).getDay(); if(g>0 && g<6) c++; } return c; }
+function renderPlannerMonths(){
+  var months=[], i; for(i=0;i<12;i++) months.push(shiftMonth(plMonthStart,i));
+  var cur=ymOf(today), caps=months.map(workdaysIn), tots=months.map(function(){ return 0; });
+  var h='<div class="bar"><h2>Planner</h2></div>'+
+    '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-month')+
+    navGroup('p-prev','p-next','<span class="lbl">'+shortMonth(months[0])+' – '+shortMonth(months[11])+'</span>','Back 3 months','Forward 3 months')+
+    '<button class="btn" data-act="p-today">Today</button></div>'+
+    '<p class="hint">Planned days per month, worked out from the weekly plan. Capacity is the number of weekdays in the month. To change the plan, select a month to open its weeks.</p>'+
+    '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Month</th>'+
+    months.map(function(ym){ return '<th class="'+(ym===cur?'now':'')+'"><button class="hlink" data-pmonth="'+ym+'" title="Open the weeks of '+monthLabel(ym)+'">'+shortMonth(ym)+'</button></th>'; }).join('')+'</tr></thead><tbody>';
+  state.assignments.forEach(function(a){
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+'</small></th>'+
+      months.map(function(ym,mi){
+        var v=round2(monthPlanned(a,ym)); tots[mi]+=v;
+        var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0;
+        return '<td class="'+(ym===cur?'now':'')+'"><button class="pm l'+lv+'" data-pmonth="'+ym+'" aria-label="'+esc(a.name)+', '+monthLabel(ym)+', '+r1(v)+' planned days. Open weeks">'+(v?r1(v):'–')+'</button></td>';
+      }).join('')+'</tr>';
+  });
+  h+='<tr class="sum"><th class="sticky">Planned days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+(t?r1(round2(t)):'')+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Capacity (weekdays)</th>'+caps.map(function(c){ return '<td class="num">'+c+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Free days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+r1(round2(Math.max(0,caps[mi]-t)))+'</td>'; }).join('')+'</tr>'+
+     '</tbody></table></div>';
+  return h;
+}
+function renderPlanner(){
+  if(!state.assignments.length) return emptyState();
+  if(plMode==='month') return renderPlannerMonths();
+  var weeks=[], i;
+  for(i=0;i<14;i++) weeks.push(iso(addDays(plannerStart,i*7)));
+  var thisW=iso(monday(today));
+  var pLast=addDays(parse(weeks[weeks.length-1]),6);
+  var h='<div class="bar"><h2>Planner</h2></div>'+
+    '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-week')+
+    navGroup('p-prev','p-next','<span class="lbl">'+fmtDay(parse(weeks[0]))+' – '+fmtDay(pLast)+' '+pLast.getFullYear()+'</span>','Back 4 weeks','Forward 4 weeks')+
+    '<button class="btn" data-act="p-today">Today</button></div>'+
+    '<p class="hint">Planned days per week, one row per assignment. Capacity is 5 days a week. Weeks you leave alone follow the assignment’s default; change any cell to override it, or clear it to go back to the default.</p>'+
+    '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Week starting</th>'+
+    weeks.map(function(w){ return '<th class="'+(w===thisW?'now':'')+'">'+fmtDay(parse(w))+'</th>'; }).join('')+'</tr></thead><tbody>';
+  state.assignments.forEach(function(a){
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="btn small" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset</button></small></th>'+
+      weeks.map(function(w){
+        var v=plannedDays(a,w);
+        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v))+'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"></td>';
+      }).join('')+'</tr>';
+  });
+  h+='<tr class="sum"><th class="sticky">Planned days</th>'+weeks.map(function(w){ return '<td class="num" data-tot="'+w+'"></td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Free days (of 5)</th>'+weeks.map(function(w){ return '<td class="num" data-free="'+w+'"></td>'; }).join('')+'</tr>'+
+     '</tbody></table></div>';
+  return h;
+}
+function refreshPlannerTotals(){
+  document.querySelectorAll('[data-tot]').forEach(function(td){
+    var w=td.getAttribute('data-tot'), t=0;
+    state.assignments.forEach(function(a){ t+=plannedDays(a,w); });
+    td.textContent = t ? String(round2(t)) : '';
+    td.className = 'num'+(t>5?' over':'');
+    var fr=$('[data-free="'+w+'"]');
+    if(fr){ fr.textContent = String(round2(Math.max(0,5-t))); fr.className='num'+(t>5?' over':''); }
+  });
+}
+
+function timeLabel(a,q){ if(!q) return 'no time logged'; return fmtN(q)+' '+(a.rateType==='day'?(q===1?'day':'days'):(q===1?'hour':'hours')); }
+/* Shared toolbar pieces */
+function seg(items,cur){ return '<div class="seg" role="group">'+items.map(function(i){ return '<button type="button" data-act="'+i[0]+'" aria-pressed="'+(i[0]===cur)+'">'+i[1]+'</button>'; }).join('')+'</div>'; }
+function navGroup(prevAct,nextAct,mid,prevLbl,nextLbl){ return '<div class="navg"><button class="ic" data-act="'+prevAct+'" aria-label="'+prevLbl+'" title="'+prevLbl+'">‹</button>'+mid+'<button class="ic" data-act="'+nextAct+'" aria-label="'+nextLbl+'" title="'+nextLbl+'">›</button></div>'; }
+function isoWeekOf(m){ var y=addDays(m,3).getFullYear(), w1=monday(new Date(y,0,4)); return y+'-W'+pad(1+Math.round((m-w1)/6048e5)); }
+function mondayOfIsoWeek(s){ var r=/^(\d{4})-W(\d{2})$/.exec(s); return r ? addDays(monday(new Date(+r[1],0,4)),(+r[2]-1)*7) : null; }
+function monthEndDate(ym){ var p=ym.split('-').map(Number); return new Date(p[0],p[1],0); }
+function shiftMonth(ym,n){ var p=ym.split('-').map(Number); return ymOf(new Date(p[0],p[1]-1+n,1)); }
+function firstWeekOf(ym){ return ym===ymOf(today) ? monday(today) : monday(addDays(parse(ym+'-01'),6)); }
+/* Days shown in the Timesheet: the week, or every day of the selected month. */
+function weekDays(){
+  var a=[], i;
+  if(tsMode==='month'){ var n=monthEndDate(tsMonth).getDate(); for(i=1;i<=n;i++) a.push(parse(tsMonth+'-'+pad(i))); }
+  else for(i=0;i<7;i++) a.push(addDays(weekAnchor,i));
+  return a;
+}
+function renderTimesheet(){
+  if(!state.assignments.length) return emptyState();
+  var days=weekDays(), isM=tsMode==='month', f=iso(days[0]), l=iso(days[days.length-1]), word=isM?'month':'week';
+  var rows=state.assignments.filter(function(a){ return (a.start<=l && (!a.end || a.end>=f)) || days.some(function(d){ return state.entries[a.id+'|'+iso(d)] || state.notes[a.id+'|'+iso(d)]; }); });
+  var shownYM = isM ? tsMonth : ymOf(addDays(weekAnchor,3));
+  var picker = isM ? '<input type="month" id="t-month" value="'+shownYM+'" aria-label="Choose month">'
+                   : '<input type="week" id="t-week" value="'+isoWeekOf(weekAnchor)+'" aria-label="Choose week">';
+  var h='<div class="bar"><h2>Timesheet</h2></div>'+
+    '<div class="toolbar">'+seg([['t-mode-week','Week'],['t-mode-month','Month']], isM?'t-mode-month':'t-mode-week')+
+    navGroup('t-prev','t-next',picker,'Previous '+word,'Next '+word)+
+    '<button class="btn" data-act="t-today">Today</button></div>'+
+    '<p class="hint">'+(isM?'<strong>'+monthLabel(tsMonth)+'</strong>':'Week of '+fmtDay(weekAnchor)+' to '+fmtDay(addDays(weekAnchor,6)))+'. Enter days (0.5 steps) for day-rate work and hours for hourly work. The days bank below the table counts unused days from earlier periods.</p>';
+  if(!rows.length) return h+'<div class="card">No assignment runs this '+word+'.</div>';
+  h+='<div class="scroll"><table class="grid'+(isM?' mgrid':'')+'"><thead><tr><th class="sticky">Assignment</th>'+
+    days.map(function(d){ var we=(d.getDay()===0||d.getDay()===6), wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':''; return '<th class="'+(iso(d)===todayISO?'now':(we?'we':''))+wk+'">'+(isM?d.toLocaleDateString('en-GB',{weekday:'narrow'}):fmtDow(d))+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Total</th></tr></thead><tbody>';
+  rows.forEach(function(a){
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+esc(rateLabel(a))+' · <button class="btn small" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
+      days.map(function(d){
+        var dI=iso(d), we=(d.getDay()===0||d.getDay()===6), q=state.entries[a.id+'|'+dI]||0;
+        var pl=plannedOnDate(a,dI); if(a.rateType==='hour') pl=pl*a.hoursPerDay; pl=Math.round(pl*2)/2;
+        var wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':'';
+        return '<td class="'+(dI===todayISO?'now':(we?'we':''))+wk+'"><input class="cell" inputmode="decimal" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', '+(a.rateType==='day'?'days':'hours')+' worked">'+(q?'<button class="x" data-clearentry="'+a.id+'|'+dI+'" aria-label="Clear entry">×</button>':'')+'<button class="nb'+(state.notes[a.id+'|'+dI]?' on':'')+'" data-opennote="'+a.id+'|'+dI+'" aria-label="Note for '+esc(a.name)+', '+dI+'" title="Add a note">✎</button></td>';
+      }).join('')+'<td class="tot num" id="rt-'+a.id+'"></td></tr>';
+    if(noteKey && noteKey.split('|')[0]===a.id){
+      var nd=parse(noteKey.split('|')[1]);
+      h+='<tr class="noterow"><th class="sticky"></th><td colspan="'+(days.length+1)+'"><label>Note for '+fmtDow(nd)+' '+fmtDay(nd)+'<textarea data-notetext="'+noteKey+'" placeholder="What did you work on?">'+esc(state.notes[noteKey]||'')+'</textarea></label><div class="ctl" style="margin-top:6px"><button class="btn small" data-act="note-close">Done</button></div></td></tr>';
+    }
+  });
+  h+='<tr class="sum"><th class="sticky">'+(isM?'Month':'Week')+' total</th><td colspan="'+(days.length+1)+'" class="num" id="ft" style="text-align:right"></td></tr></tbody></table></div>'+
+    '<div class="tfoot"><button class="btn small danger" data-act="wk-clear">Clear this '+word+'…</button></div>';
+  h+='<section class="card" id="bank" style="margin-top:16px"></section>';
+  var nl=[]; days.forEach(function(d){ state.assignments.forEach(function(a){ var n=state.notes[a.id+'|'+iso(d)]; if(n) nl.push({ d:d, a:a, n:n }); }); });
+  if(nl.length) h+='<section class="card" style="margin-top:16px"><h3>Notes this '+word+'</h3>'+nl.map(function(x){ return '<p class="nline"><strong>'+fmtDow(x.d)+' '+fmtDay(x.d)+'</strong> · '+esc(x.a.name)+' · <span data-notetime="'+x.a.id+'|'+iso(x.d)+'">'+timeLabel(x.a,state.entries[x.a.id+'|'+iso(x.d)]||0)+'</span><br>'+esc(x.n).replace(/\n/g,'<br>')+'</p>'; }).join('')+'</section>';
+  return h;
+}
+function refreshTimesheetTotals(){
+  var bk=$('#bank'); if(bk) bk.innerHTML=bankHTML();
+  var days=weekDays(), sums={};
+  state.assignments.forEach(function(a){
+    var el=$('#rt-'+a.id); if(!el) return;
+    var q=0; days.forEach(function(d){ q+=state.entries[a.id+'|'+iso(d)]||0; });
+    el.innerHTML = q ? (round2(q)+' '+unit(a)+'<small>'+money(q*a.rate,a.currency)+'</small>') : '';
+    addTo(sums,a.currency,q*a.rate);
+  });
+  var ft=$('#ft'); if(ft){ var ks=Object.keys(sums).filter(function(k){ return sums[k]>0; }); ft.textContent = ks.length ? ks.map(function(k){ return money(sums[k],k); }).join('  ·  ') : '—'; }
+}
+
+function renderIncome(){
+  if(!state.assignments.length) return emptyState();
+  var cur=ymOf(today);
+  var months=[], start=new Date(today.getFullYear(), today.getMonth()-11, 1), i;
+  for(i=0;i<21;i++) months.push(ymOf(new Date(start.getFullYear(), start.getMonth()+i, 1)));
+  var received={}, outstanding={}, overdue={}, forecast={}, fDays=0, fHours=0;
+  Object.keys(state.payments).forEach(function(k){
+    var a=state.assignments.filter(function(x){ return x.id===k.split('|')[0]; })[0]; if(!a) return;
+    var p=state.payments[k]; if(p.date && p.date.slice(0,4)===String(today.getFullYear())) addTo(received,a.currency,p.amount);
+  });
+  var idx=months.indexOf(cur);
+  state.assignments.forEach(function(a){
+    months.forEach(function(ym,mi){
+      var s=monthStats(a,ym);
+      if(ym<=cur){ var o=Math.max(0,s.L-s.R); if(o>0.004){ addTo(outstanding,a.currency,o); if(s.end<todayISO && todayISO>s.due) addTo(overdue,a.currency,o); } }
+      if(mi>=idx && mi<=idx+2){ addTo(forecast,a.currency,s.F); fDays+=s.Fd; if(a.rateType==='hour') fHours+=s.Fq; }
+    });
+  });
+  var hasOverdue = Object.keys(overdue).some(function(k){ return overdue[k]>0.004; });
+  var h='<div class="bar"><h2>Income</h2></div>'+
+    '<div class="tiles">'+
+    '<div class="tile"><div class="k">Received this year</div>'+curLines(received)+'</div>'+
+    '<div class="tile"><div class="k">Outstanding</div>'+curLines(outstanding)+'<small>Logged work not yet marked received</small></div>'+
+    '<div class="tile'+(hasOverdue?' crit':'')+'"><div class="k">Overdue</div>'+curLines(overdue)+'<small>Past the payment terms</small></div>'+
+    '<div class="tile"><div class="k">Forecast, next 3 months</div>'+curLines(forecast)+'<small>'+r1(round2(fDays))+' days'+(fHours>0.004?' (incl. '+r1(round2(fHours))+' h hourly work)':'')+' · logged to date plus planned days</small></div>'+
+    '</div>';
+  function monthBlock(ym){
+    var rows='', tot={}, totD=0;
+    state.assignments.forEach(function(a){
+      var s=monthStats(a,ym);
+      if(s.L<=0 && s.P<=0 && s.F<=0 && s.R<=0) return;
+      var st=statusOf(s);
+      addTo(tot,a.currency,s.F); totD+=s.Fd;
+      var canFull = s.L>0.004 && s.R<s.L-0.005;
+      rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td>'+
+        '<td class="num">'+(s.qty?round2(s.qty)+' '+unit(a):'—')+'<small>'+(s.L?money(s.L,a.currency):'')+'</small></td>'+
+        '<td class="num">'+(s.Fq>0.004?r1(round2(s.Fq))+' '+unit(a):'—')+'<small>'+(s.F>0.004?money(s.F,a.currency):'')+'</small></td>'+
+        '<td><span class="amtwrap"><span class="cur" aria-hidden="true">'+({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency))+'</span><input class="amt'+mk()+'" inputmode="decimal" data-rec="'+a.id+'|'+ym+'" value="'+(s.R?String(round2(s.R)):'')+'" placeholder="0" aria-label="Received in '+esc(a.currency)+' for '+esc(a.name)+', '+monthLabel(ym)+'"></span>'+
+          (s.rec?'<small><input class="dt" type="date" data-recdate="'+a.id+'|'+ym+'" value="'+esc(s.rec.date||'')+'" aria-label="Date received"></small>':'')+'</td>'+
+        '<td class="num">'+fmtDay(parse(s.due))+'</td>'+
+        '<td><span class="pill '+st[0]+'">'+st[1]+'</span>'+(canFull?'<small><button class="btn small" data-full="'+a.id+'|'+ym+'">Mark received</button></small>':'')+'</td></tr>';
+    });
+    if(!rows) return '';
+    var tl=Object.keys(tot).filter(function(k){ return tot[k]>0.004; }).map(function(k){ return money(tot[k],k); }).join(' · ');
+    return '<section class="month'+(ym===cur?' cur':'')+'"><h3><span>'+monthLabel(ym)+'</span><span class="mt">Forecast '+r1(round2(totD))+' days'+(tl?' · '+tl:'')+'</span></h3>'+
+      '<div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Logged</th><th>Forecast</th><th>Received</th><th>Due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+  }
+  var upcoming = months.filter(function(m){ return m>=cur; }).map(monthBlock).join('');
+  var past = months.filter(function(m){ return m<cur; }).reverse().map(monthBlock).join('');
+  h+=(upcoming||'<p class="hint">Nothing planned from this month on.</p>');
+  if(past) h+='<h2 style="margin:28px 0 12px">Earlier months</h2>'+past;
+  h+='<p class="foot">Assumptions: you invoice at month end, and the due date is month end plus the assignment’s payment terms. Forecast is the work you logged up to today plus the days you planned after today. Totals are per currency, with no conversion.</p>';
+  return h;
+}
+
+/* ---------- reports ---------- */
+var PERIODS=[['week','Week'],['month','Month'],['quarter','Quarter'],['half','Half-year'],['year','Year']];
+var PLEN={ month:1, quarter:3, half:6, year:12 };
+function periodOf(type,anc){
+  var y=anc.getFullYear(), m=anc.getMonth(), from, to, label;
+  if(type==='week'){ from=monday(anc); to=addDays(from,6); label='Week of '+fmtDay(from)+' '+from.getFullYear(); }
+  else {
+    var len=PLEN[type], sm=Math.floor(m/len)*len;
+    from=new Date(y,sm,1); to=new Date(y,sm+len,0);
+    label = type==='month' ? monthLabel(ymOf(from)) : type==='quarter' ? 'Q'+(sm/3+1)+' '+y : type==='half' ? 'H'+(sm/6+1)+' '+y : String(y);
+  }
+  return { from:from, to:to, label:label };
+}
+function shiftPeriod(dir){
+  if(repType==='week') repAnchor=addDays(repAnchor,7*dir);
+  else repAnchor=new Date(repAnchor.getFullYear(), repAnchor.getMonth()+PLEN[repType]*dir, 1);
+}
+function subPeriods(type,from,to){
+  var out=[], s=new Date(from), e;
+  while(s<=to){
+    if(type==='week'){ e=new Date(s); out.push({ from:iso(s), to:iso(e), label:fmtDow(s)+' '+fmtDay(s) }); }
+    else if(type==='month'){ e=addDays(monday(s),6); if(e>to) e=new Date(to); out.push({ from:iso(s), to:iso(e), label:fmtDay(s)+(iso(e)!==iso(s)?' – '+fmtDay(e):'') }); }
+    else { e=new Date(s.getFullYear(), s.getMonth()+1, 0); out.push({ from:iso(s), to:iso(e), label:s.toLocaleDateString('en-GB',{month:'long',year:'numeric'}) }); }
+    s=addDays(e,1);
+  }
+  return out;
+}
+function hoursOf(a,q){ return a.rateType==='hour' ? q : q*(a.hoursPerDay||8); }
+function unitWord(a){ return a.rateType==='day' ? 'days' : 'hours'; }
+function curText(map){
+  var ks=Object.keys(map).filter(function(k){ return Math.abs(map[k])>0.004; });
+  return ks.length ? ks.map(function(k){ return money(map[k],k); }).join(' · ') : '—';
+}
+function reportData(){
+  var P=periodOf(repType,repAnchor), f=iso(P.from), t=iso(P.to), d;
+  var as=state.assignments.filter(function(a){ return repFilter==='all' || a.id===repFilter; });
+  var per={}, lines=[], work=0;
+  as.forEach(function(a){ per[a.id]={ qty:0, deq:0, hours:0, earned:0, planned:0, received:0 }; });
+  for(d=new Date(P.from); d<=P.to; d=addDays(d,1)){
+    var dI=iso(d); if((d.getDay()+6)%7<5) work++;
+    as.forEach(function(a){
+      var k=a.id+'|'+dI, q=state.entries[k]||0, n=state.notes[k]||'', s=per[a.id];
+      s.planned+=plannedOnDate(a,dI);
+      if(!q && !n) return;
+      s.qty+=q; s.deq+=dayEq(a,q); s.hours+=hoursOf(a,q); s.earned+=q*a.rate;
+      lines.push({ date:dI, a:a, q:q, amt:q*a.rate, note:n });
+    });
+  }
+  Object.keys(state.payments).forEach(function(k){
+    var p=state.payments[k], s=per[k.split('|')[0]];
+    if(s && p.date && p.date>=f && p.date<=t) s.received+=p.amount;
+  });
+  return { P:P, f:f, t:t, as:as, per:per, lines:lines, work:work };
+}
+function renderReports(){
+  if(!state.assignments.length) return emptyState();
+  if(repFilter!=='all' && !state.assignments.some(function(a){ return a.id===repFilter; })) repFilter='all';
+  var R=reportData(), tot={ deq:0, hours:0, planned:0 }, earned={}, received={};
+  R.as.forEach(function(a){ var s=R.per[a.id]; tot.deq+=s.deq; tot.hours+=s.hours; tot.planned+=s.planned; addTo(earned,a.currency,s.earned); addTo(received,a.currency,s.received); });
+  var isCur = iso(periodOf(repType,today).from)===R.f;
+  var fname = repFilter==='all' ? '' : state.assignments.filter(function(a){ return a.id===repFilter; })[0].name;
+  var h='<div class="bar"><h2>Reports</h2>'+
+    '<details class="menu noprint"><summary class="btn primary">Export ▾</summary><div class="pop">'+
+      '<button data-act="r-csv">Download CSV</button><button data-act="r-print">Print / save as PDF</button></div></details></div>'+
+    '<div class="toolbar noprint">'+seg(PERIODS.map(function(p){ return ['r-type-'+p[0],p[1]]; }), 'r-type-'+repType)+
+    navGroup('r-prev','r-next','<span class="lbl">'+esc(R.P.label)+'</span>','Previous period','Next period')+
+    '<button class="btn" data-act="r-now">Today</button><span class="sp"></span>'+
+    '<select class="sel" id="r-filter" aria-label="Assignment"><option value="all">All assignments</option>'+state.assignments.map(function(a){ return '<option value="'+a.id+'"'+(a.id===repFilter?' selected':'')+'>'+esc(a.name)+'</option>'; }).join('')+'</select></div>'+
+    '<p class="hint"><strong>'+esc(R.P.label)+'</strong>'+(isCur?' (current)':'')+' · '+fmtDay(R.P.from)+' '+R.P.from.getFullYear()+' to '+fmtDay(R.P.to)+' '+R.P.to.getFullYear()+' · '+(fname?esc(fname):'All assignments')+'</p>';
+  h+='<div class="tiles">'+
+    '<div class="tile"><div class="k">Days worked</div><div class="v">'+r1(round2(tot.deq))+'</div><small>≈ '+r1(round2(tot.hours))+' hours · planned '+r1(round2(tot.planned))+' days</small></div>'+
+    '<div class="tile"><div class="k">Utilisation</div><div class="v">'+(R.work?Math.round(tot.deq/R.work*100)+'%':'—')+'</div><small>of '+R.work+' working days (Mon–Fri)</small></div>'+
+    '<div class="tile"><div class="k">Earned</div>'+curLines(earned)+'<small>Logged time × rate</small></div>'+
+    '<div class="tile"><div class="k">Received</div>'+curLines(received)+'<small>Payments dated in this period</small></div>'+
+    '</div>';
+  var active=R.as.filter(function(a){ var s=R.per[a.id]; return s.qty || s.planned>0.004 || s.received; });
+  if(!active.length) return h+'<div class="card">Nothing logged or planned in this period.</div>';
+  // by assignment
+  var rows='';
+  active.forEach(function(a){
+    var s=R.per[a.id];
+    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'<small>'+esc(rateLabel(a))+'</small></td>'+
+      '<td class="num">'+(s.qty?r1(round2(s.qty))+' '+unit(a):'—')+'</td><td class="num">'+r1(round2(s.deq))+'</td><td class="num">'+r1(round2(s.planned))+'</td>'+
+      '<td class="num">'+money(s.earned,a.currency)+'</td><td class="num">'+(s.received?money(s.received,a.currency):'—')+'</td></tr>';
+  });
+  rows+='<tr class="rtot"><td>Total</td><td></td><td class="num">'+r1(round2(tot.deq))+'</td><td class="num">'+r1(round2(tot.planned))+'</td><td class="num">'+curText(earned)+'</td><td class="num">'+curText(received)+'</td></tr>';
+  h+='<section class="rsec"><h3>By assignment</h3><div class="scroll"><table class="inc"><thead><tr><th>Assignment</th><th>Logged</th><th>Days</th><th>Planned days</th><th>Earned</th><th>Received</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+  // breakdown over time
+  var worked=active.filter(function(a){ return R.per[a.id].qty; });
+  if(worked.length){
+    var subs=subPeriods(repType,R.P.from,R.P.to), br='';
+    subs.forEach(function(sp){
+      var dsum=0, em={};
+      var cells=worked.map(function(a){
+        var q=0; R.lines.forEach(function(x){ if(x.a===a && x.date>=sp.from && x.date<=sp.to) q+=x.q; });
+        dsum+=dayEq(a,q); addTo(em,a.currency,q*a.rate);
+        return '<td class="num">'+(q?r1(round2(q))+' '+unit(a):'—')+'</td>';
+      }).join('');
+      br+='<tr><td>'+sp.label+'</td>'+cells+'<td class="num">'+(dsum?r1(round2(dsum)):'—')+'</td><td class="num">'+curText(em)+'</td></tr>';
+    });
+    br+='<tr class="rtot"><td>Total</td>'+worked.map(function(a){ return '<td class="num">'+r1(round2(R.per[a.id].qty))+' '+unit(a)+'</td>'; }).join('')+'<td class="num">'+r1(round2(tot.deq))+'</td><td class="num">'+curText(earned)+'</td></tr>';
+    var byLbl={ week:'By day', month:'By week', quarter:'By month', half:'By month', year:'By month' }[repType];
+    h+='<section class="rsec"><h3>'+byLbl+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Period</th>'+worked.map(function(a){ return '<th><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</th>'; }).join('')+'<th>Days</th><th>Earned</th></tr></thead><tbody>'+br+'</tbody></table></div></section>';
+  }
+  // detail
+  if(R.lines.length){
+    h+='<section class="rsec"><h3>Detail</h3><div class="scroll"><table class="inc"><thead><tr><th>Date</th><th>Assignment</th><th>Time</th><th>Amount</th><th style="text-align:left">Note</th></tr></thead><tbody>'+
+      R.lines.map(function(x){ var d=parse(x.date); return '<tr><td>'+fmtDow(d)+' '+fmtDay(d)+' '+d.getFullYear()+'</td><td><span class="dot" style="background:'+x.a.color+'"></span> '+esc(x.a.name)+'</td><td class="num">'+(x.q?r1(x.q)+' '+unit(x.a):'—')+'</td><td class="num">'+(x.q?money(x.amt,x.a.currency):'—')+'</td><td class="note">'+esc(x.note).replace(/\n/g,'<br>')+'</td></tr>'; }).join('')+
+      '</tbody></table></div></section>';
+  }
+  h+='<p class="foot">Days convert hourly work at the assignment’s hours per day. Hours for day-rate work use the assignment’s hours per day (8 if not set). Totals are per currency, with no conversion.</p>';
+  return h;
+}
+function csvCell(v){ v=v==null?'':String(v); return /[",;\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function exportReportCSV(){
+  var R=reportData(), L=[];
+  var row=function(arr){ L.push(arr.map(csvCell).join(',')); };
+  var fname = repFilter==='all' ? 'All' : state.assignments.filter(function(a){ return a.id===repFilter; })[0].name;
+  row(['Solo Planner report', R.P.label]); row(['From', R.f]); row(['To', R.t]); row(['Assignments', fname]); row(['Working days (Mon-Fri)', R.work]); row([]);
+  row(['Summary']);
+  row(['Assignment','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
+  R.as.forEach(function(a){
+    var s=R.per[a.id]; if(!(s.qty || s.planned>0.004 || s.received)) return;
+    row([a.name, a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
+  });
+  row([]); row(['Detail']);
+  row(['Date','Weekday','Assignment','Quantity','Unit','Day equivalent','Hours','Rate','Currency','Amount','Note']);
+  R.lines.forEach(function(x){
+    row([x.date, fmtDow(parse(x.date)), x.a.name, round2(x.q), unitWord(x.a), round2(dayEq(x.a,x.q)), round2(hoursOf(x.a,x.q)), x.a.rate, x.a.currency, round2(x.amt), x.note]);
+  });
+  download('solo-planner-report-'+repType+'-'+R.f+'.csv', '﻿'+L.join('\r\n'), 'text/csv;charset=utf-8');
+}
+
+function renderAssignments(){
+  var a = editing ? state.assignments.filter(function(x){ return x.id===editing; })[0] : null;
+  var v = a || { name:'', rateType:'day', rate:'', currency:'GBP', start:todayISO, end:'', perWeek:5, hoursPerDay:8, terms:30, allowMode:'none', allowDays:'' };
+  var am=v.allowMode||'none';
+  var h='<div class="bar"><h2>Assignments</h2></div>'+
+    '<form class="f card" id="aform" novalidate>'+
+    '<label>Name<input id="f-name" required value="'+esc(v.name)+'" placeholder="Client or assignment"></label>'+
+    '<label>Color<input type="color" id="f-color" value="'+esc(v.color||COLORS[state.assignments.length % COLORS.length])+'"></label>'+
+    '<label>Billing<select id="f-type"><option value="day"'+(v.rateType==='day'?' selected':'')+'>Day rate</option><option value="hour"'+(v.rateType==='hour'?' selected':'')+'>Hourly rate</option></select></label>'+
+    '<label>Rate<input id="f-rate" class="'+mk().trim()+'" inputmode="decimal" required value="'+esc(v.rate)+'" placeholder="450"></label>'+
+    '<label>Currency<select id="f-cur">'+['GBP','EUR','USD'].map(function(c){ return '<option'+(v.currency===c?' selected':'')+'>'+c+'</option>'; }).join('')+'</select></label>'+
+    '<label>Start<input id="f-start" type="date" required value="'+esc(v.start)+'"></label>'+
+    '<label>End (optional)<input id="f-end" type="date" value="'+esc(v.end||'')+'"></label>'+
+    '<label>Days I plan to work per week (Planner)<input id="f-pw" inputmode="decimal" value="'+esc(v.perWeek)+'"></label>'+
+    '<label>Contract allowance (days the client gave you)<select id="f-amode"><option value="none"'+(am==='none'?' selected':'')+'>None</option><option value="week"'+(am==='week'?' selected':'')+'>Per week, unused roll over</option><option value="month"'+(am==='month'?' selected':'')+'>Per month, unused roll over</option><option value="total"'+(am==='total'?' selected':'')+'>One total pot of days</option></select></label>'+
+    '<label id="adays-wrap"'+(am==='none'?' hidden':'')+'>Contract days<input id="f-adays" inputmode="decimal" value="'+esc(v.allowDays||'')+'"></label>'+
+    '<label id="hpd-wrap"'+(v.rateType==='hour'?'':' hidden')+'>Hours per day<input id="f-hpd" inputmode="decimal" value="'+esc(v.hoursPerDay)+'"></label>'+
+    '<label>Payment terms (days)<input id="f-terms" inputmode="numeric" value="'+esc(v.terms)+'"></label>'+
+    '<div class="row"><button class="btn primary" type="submit">'+(a?'Save changes':'Add assignment')+'</button>'+(a?'<button class="btn" type="button" data-act="cancel-edit">Cancel</button>':'')+'<span class="err" id="f-err" role="alert"></span></div></form>';
+  h+='<div class="alist">'+state.assignments.map(function(x){
+    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+esc(rateLabel(x))+' · '+x.perWeek+' d/week · '+fmtDay(parse(x.start))+' '+parse(x.start).getFullYear()+' to '+(x.end?fmtDay(parse(x.end))+' '+parse(x.end).getFullYear():'open-ended')+' · pays in '+x.terms+' days'+(function(){ var b=bankAt(x,iso(monday(today))); return b?' · days left <strong>'+r1(b.balance)+'</strong>':''; })()+'</div></div>'+
+      '<div class="ctl"><button class="btn small" data-edit="'+x.id+'">Edit</button><button class="btn small danger" data-del="'+x.id+'">Delete</button></div></div>';
+  }).join('')+'</div>';
+  if(state.assignments.length){
+    h+='<div style="margin-top:24px" class="ctl"><button class="btn small danger" data-act="clear">Clear all data</button></div>';
+  }
+  h+='<section class="card" style="margin-top:24px"><h3>Data file</h3><p class="hint">'+(connected?'Saving to <strong>'+esc(fileName)+'</strong>. Keep it in a cloud-synced folder.':'Not connected to a file.')+'</p><div class="ctl">'+(supportsFS?'<button class="btn small" data-act="fs-switch">Switch file</button>':'')+'<button class="btn small" data-act="export">Export copy</button><button class="btn small" data-act="import">Import…</button></div></section>';
+  h+=pwCardHTML();
+  return h;
+}
+
+function renderConnect(){
+  if(needPerm) return '<section class="card empty"><h2>Reconnect your data file</h2><p>The browser needs your permission again to read and write <strong>'+esc(fileName)+'</strong>.</p><div class="ctl"><button class="btn primary" data-act="fs-reconnect">Reconnect</button><button class="btn" data-act="fs-open">Choose another file</button></div></section>';
+  return '<section class="card empty"><h2>Choose where your data lives</h2><p>Everything is stored in one JSON file on your computer. Put it in a folder that OneDrive, iCloud, Google Drive or Dropbox syncs, and it is backed up to the cloud automatically.</p><div class="ctl"><button class="btn primary" data-act="fs-new">Create a new data file</button><button class="btn" data-act="fs-open">Open an existing file</button></div></section>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll('.tab').forEach(function(b){ if(b.getAttribute('data-view')===view) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  var m=$('#main'), bn=$('#banner');
+  var bh='';
+  if(conflict) bh='<span>This file was changed outside this window (another device or your sync service).</span><button class="btn small" data-act="conf-load">Load the file’s version</button><button class="btn small danger" data-act="conf-over">Overwrite with mine</button>';
+  else if(!supportsFS) bh='<span>This browser can’t save to a file on its own. Use Chrome or Edge for automatic saving; otherwise use Export in the Assignments tab.</span>';
+  document.body.classList.toggle('locked', locked);
+  var eb=$('#eyebtn');
+  eb.innerHTML = masked
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Show amounts'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.5 9.5 0 0 1 12 4c6.5 0 10 7 10 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>Hide amounts';
+  eb.setAttribute('aria-pressed', masked?'false':'true');
+  if(locked){ bn.innerHTML=''; m.innerHTML=renderLock(); var p1=$('#pw1'); if(p1) p1.focus(); return; }
+  bn.innerHTML=bh;
+  if(!loaded){ m.innerHTML='<p class="hint">Loading…</p>'; return; }
+  if(supportsFS && !connected){ m.innerHTML=renderConnect(); return; }
+  m.innerHTML = ({planner:renderPlanner,timesheet:renderTimesheet,income:renderIncome,reports:renderReports,assignments:renderAssignments})[view]();
+  if(view==='planner') refreshPlannerTotals();
+  if(view==='timesheet') refreshTimesheetTotals();
+}
+
+/* ---------- actions ---------- */
+function loadExample(){
+  var a={ id:uid(), name:'Client A (example)', rateType:'day', rate:450, currency:'GBP', start:iso(addDays(monday(today),-70)), end:'', perWeek:5, hoursPerDay:8, terms:30, color:COLORS[0] };
+  var b={ id:uid(), name:'Client B (example)', rateType:'hour', rate:60, currency:'EUR', start:iso(addDays(monday(today),-35)), end:'', perWeek:1, hoursPerDay:8, terms:15, color:COLORS[1] };
+  state.assignments.push(a,b);
+  var d=addDays(monday(today),-70), i;
+  for(i=0;i<70;i++){ var x=addDays(d,i), dow=(x.getDay()+6)%7, xi=iso(x); if(xi>=todayISO) break; if(dow<5) state.entries[a.id+'|'+xi]=1; if(dow===2 && xi>=b.start) state.entries[b.id+'|'+xi]=8; }
+  var pm=ymOf(addDays(today,-62)); state.payments[a.id+'|'+pm]={ amount:round2(monthStats(a,pm).L), date:iso(addDays(parse(pm+'-01'),50)) };
+}
+function removeAssignment(id){
+  state.assignments = state.assignments.filter(function(x){ return x.id!==id; });
+  [state.plan,state.entries,state.payments,state.notes].forEach(function(o){ Object.keys(o).forEach(function(k){ if(k.split('|')[0]===id) delete o[k]; }); });
+}
+function fillFromPlan(id){
+  var a=state.assignments.filter(function(x){ return x.id===id; })[0]; if(!a) return;
+  weekDays().forEach(function(d){
+    var dI=iso(d), k=a.id+'|'+dI; if(state.entries[k]) return;
+    var pl=plannedOnDate(a,dI); if(a.rateType==='hour') pl*=a.hoursPerDay;
+    pl=Math.round(pl*2)/2; if(pl>0) state.entries[k]=pl;
+  });
+}
+
+function closeMenus(except){ document.querySelectorAll('details.menu[open]').forEach(function(d){ if(d!==except) d.open=false; }); }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenus(); });
+document.addEventListener('click', function(e){
+  closeMenus(e.target.closest('details.menu'));
+  var t=e.target.closest('button'); if(!t) return;
+  if(t.classList.contains('tab')){ location.hash='#'+t.getAttribute('data-view'); return; }
+  var act=t.getAttribute('data-act');
+  if(act==='p-prev'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,-3); else plannerStart=addDays(plannerStart,-28); render(); }
+  else if(act==='p-next'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,3); else plannerStart=addDays(plannerStart,28); render(); }
+  else if(act==='p-today'){ plannerStart=addDays(monday(today),-7); plMonthStart=shiftMonth(ymOf(today),-1); render(); }
+  else if(act==='p-mode-month'){ if(plMode!=='month'){ plMonthStart=shiftMonth(ymOf(addDays(plannerStart,3)),0); plMode='month'; render(); } }
+  else if(act==='p-mode-week'){ if(plMode!=='week'){ plMode='week'; render(); } }
+  else if(t.hasAttribute('data-pmonth')){ var pmo=t.getAttribute('data-pmonth'); plannerStart=monday(parse(pmo+'-01')); plMode='week'; render(); }
+  else if(act==='t-prev'){ if(tsMode==='month') tsMonth=shiftMonth(tsMonth,-1); else weekAnchor=addDays(weekAnchor,-7); noteKey=null; render(); }
+  else if(act==='t-next'){ if(tsMode==='month') tsMonth=shiftMonth(tsMonth,1); else weekAnchor=addDays(weekAnchor,7); noteKey=null; render(); }
+  else if(act==='t-today'){ weekAnchor=monday(today); tsMonth=ymOf(today); noteKey=null; render(); }
+  else if(act==='t-mode-month'){ if(tsMode!=='month'){ tsMonth=ymOf(addDays(weekAnchor,3)); tsMode='month'; noteKey=null; render(); } }
+  else if(act==='t-mode-week'){ if(tsMode!=='week'){ weekAnchor=firstWeekOf(tsMonth); tsMode='week'; noteKey=null; render(); } }
+  else if(act==='eye'){ setMasked(!masked); render(); }
+  else if(act==='lock'){ setMasked(true); setUnlocked(false); pwChange=false; noteKey=null; editing=null; render(); window.scrollTo(0,0); }
+  else if(act==='pw-change'){ pwChange=true; render(); var pc=$('#pwc'); if(pc) pc.focus(); }
+  else if(act==='pw-cancel'){ pwChange=false; render(); }
+  else if(act==='r-prev'){ shiftPeriod(-1); render(); }
+  else if(act==='r-next'){ shiftPeriod(1); render(); }
+  else if(act==='r-now'){ repAnchor=new Date(today); render(); }
+  else if(act && act.indexOf('r-type-')===0){ repType=act.slice(7); render(); }
+  else if(act==='r-csv'){ closeMenus(); exportReportCSV(); }
+  else if(act==='r-print'){ closeMenus(); window.print(); }
+  else if(act==='cf-yes'){ closeConfirm(true); }
+  else if(act==='cf-no'){ closeConfirm(false); }
+  else if(act==='wk-clear'){
+    var cdays=weekDays(), cw=tsMode==='month'?'month':'week', c0=cdays[0], c1=cdays[cdays.length-1];
+    askConfirm('Clear this '+cw+'?', 'This deletes every time entry and note from '+fmtDay(c0)+' to '+fmtDay(c1)+' '+c1.getFullYear()+', for all assignments. This cannot be undone.', 'Clear '+cw, function(){
+      weekDays().forEach(function(d){ state.assignments.forEach(function(a){ delete state.entries[a.id+'|'+iso(d)]; delete state.notes[a.id+'|'+iso(d)]; }); });
+      noteKey=null; changed(); render();
+    });
+  }
+  else if(act==='goto-assign'){ location.hash='#assignments'; }
+  else if(act==='fs-new'){ pickNew(); }
+  else if(act==='fs-open'){ pickOpen(); }
+  else if(act==='fs-reconnect'){ reconnect(); }
+  else if(act==='fs-switch'){ connected=false; needPerm=false; fh=null; persist='init'; setStatus(); render(); }
+  else if(act==='export'){ exportJSON(); }
+  else if(act==='import'){ $('#impfile').click(); }
+  else if(act==='conf-load'){
+    askConfirm('Load the file’s version?', 'Changes you made in this window since the last save will be lost.', 'Load file', function(){
+      (async function(){ try{ await readFromHandle(); conflict=false; persist='saved'; setStatus(); render(); }catch(e){} })();
+    });
+  }
+  else if(act==='conf-over'){
+    askConfirm('Overwrite the file?', 'The changes made to '+fileName+' elsewhere (another device or your sync service) will be lost and replaced with what is in this window.', 'Overwrite', function(){
+      conflict=false; flush(true); render();
+    });
+  }
+  else if(act==='example'){ loadExample(); changed(); render(); }
+  else if(act==='cancel-edit'){ editing=null; render(); }
+  else if(act==='clear'){
+    askConfirm('Delete all data?', 'This deletes every assignment, planned day, time entry, note and payment in '+(fileName||'this planner')+'. This cannot be undone. Use Export copy first if you want a backup.', 'Delete everything', function(){
+      state.assignments=[]; state.plan={}; state.entries={}; state.payments={}; state.notes={}; editing=null; changed(); render();
+    });
+  }
+  else if(t.hasAttribute('data-edit')){ editing=t.getAttribute('data-edit'); render(); window.scrollTo(0,0); }
+  else if(t.hasAttribute('data-del')){
+    var id=t.getAttribute('data-del'), da=state.assignments.filter(function(x){ return x.id===id; })[0]; if(!da) return;
+    askConfirm('Delete “'+da.name+'”?', 'This deletes the assignment and all its planned days, time entries, notes and payments. This cannot be undone.', 'Delete assignment', function(){
+      removeAssignment(id); if(editing===id) editing=null; changed(); render();
+    });
+  }
+  else if(t.hasAttribute('data-opennote')){ noteKey=t.getAttribute('data-opennote'); render(); var ta=$('[data-notetext]'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); } }
+  else if(act==='note-close'){ noteKey=null; render(); }
+  else if(t.hasAttribute('data-clearentry')){
+    var ck=t.getAttribute('data-clearentry'), ca=state.assignments.filter(function(x){ return x.id===ck.split('|')[0]; })[0], cd2=parse(ck.split('|')[1]);
+    askConfirm('Clear this entry?', 'This removes '+(ca?timeLabel(ca,state.entries[ck]||0)+' logged for '+ca.name:'the time logged')+' on '+fmtDow(cd2)+' '+fmtDay(cd2)+'. The note for that day is kept.', 'Clear entry', function(){
+      delete state.entries[ck]; changed(); render();
+    });
+  }
+  else if(t.hasAttribute('data-resetrow')){
+    var rid=t.getAttribute('data-resetrow'), ra=state.assignments.filter(function(x){ return x.id===rid; })[0];
+    askConfirm('Reset planned days?', 'This removes your changes to the planned days for '+(ra?ra.name:'this assignment')+' in the 14 weeks shown, and sets them back to the default. This cannot be undone.', 'Reset weeks', function(){
+      var i2; for(i2=0;i2<14;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; } changed(); render();
+    });
+  }
+  else if(t.hasAttribute('data-fill')){ fillFromPlan(t.getAttribute('data-fill')); changed(); render(); }
+  else if(t.hasAttribute('data-full')){
+    var p=t.getAttribute('data-full').split('|'), a=state.assignments.filter(function(x){ return x.id===p[0]; })[0];
+    if(a){ state.payments[p[0]+'|'+p[1]]={ amount:round2(monthStats(a,p[1]).L), date:todayISO }; changed(); render(); }
+  }
+});
+
+document.addEventListener('change', function(e){
+  var t=e.target;
+  if(t.hasAttribute('data-plan')){
+    var k=t.getAttribute('data-plan'), p=k.split('|'), a=state.assignments.filter(function(x){ return x.id===p[0]; })[0]; if(!a) return;
+    var blank=t.value.trim()==='';
+    var v=blank?defaultWeek(a,p[1]):Math.min(7,Math.max(0,round2(num(t.value))));
+    if(blank||v===defaultWeek(a,p[1])) delete state.plan[k]; else state.plan[k]=v;
+    t.value=planVal(a,p[1]); t.className='cell l'+Math.min(5,Math.ceil(v));
+    refreshPlannerTotals(); changed();
+  } else if(t.hasAttribute('data-entry')){
+    var k2=t.getAttribute('data-entry'), a2=state.assignments.filter(function(x){ return x.id===k2.split('|')[0]; })[0]; if(!a2) return;
+    var max=a2.rateType==='day'?1:24, v2=Math.min(max,Math.max(0,round2(num(t.value))));
+    if(v2) state.entries[k2]=v2; else delete state.entries[k2];
+    t.value=fmtN(v2); var ntl=$('[data-notetime="'+k2+'"]'); if(ntl) ntl.textContent=timeLabel(a2,v2);
+    refreshTimesheetTotals(); changed();
+  } else if(t.hasAttribute('data-notetext')){
+    var nk=t.getAttribute('data-notetext'), nv=t.value.trim();
+    if(nv) state.notes[nk]=nv; else delete state.notes[nk];
+    var nb=$('[data-opennote="'+nk+'"]'); if(nb) nb.classList.toggle('on',!!nv);
+    changed();
+  } else if(t.hasAttribute('data-rec')){
+    var k3=t.getAttribute('data-rec'), amt=Math.max(0,round2(num(t.value)));
+    if(amt>0){ var old=state.payments[k3]; state.payments[k3]={ amount:amt, date: old&&old.date?old.date:todayISO }; } else delete state.payments[k3];
+    changed(); render();
+  } else if(t.hasAttribute('data-recdate')){
+    var k4=t.getAttribute('data-recdate'); if(state.payments[k4]){ state.payments[k4].date=t.value||todayISO; changed(); render(); }
+  } else if(t.id==='t-month'){
+    if(!/^\d{4}-\d{2}$/.test(t.value)) return;
+    if(tsMode==='month') tsMonth=t.value; else weekAnchor=firstWeekOf(t.value);
+    noteKey=null; render();
+  } else if(t.id==='t-week'){
+    var wm=mondayOfIsoWeek(t.value); if(!wm) return;
+    weekAnchor=wm; noteKey=null; render();
+  } else if(t.id==='r-filter'){
+    repFilter=t.value; render();
+  } else if(t.id==='f-amode'){
+    var aw=$('#adays-wrap'); if(aw) aw.hidden=(t.value==='none');
+    var ad=$('#f-adays'), pw=$('#f-pw'); if(ad && pw && t.value==='week' && !ad.value.trim()) ad.value=pw.value;
+  } else if(t.id==='f-type'){
+    var hw=$('#hpd-wrap'); if(hw) hw.hidden = (t.value!=='hour');
+  }
+});
+
+document.addEventListener('change', function(e){
+  var t=e.target; if(t.id!=='impfile' || !t.files || !t.files[0]) return;
+  var f=t.files[0], r=new FileReader();
+  r.onload=function(){ try{ var d=JSON.parse(r.result); if(!d || !Array.isArray(d.assignments)) throw new Error('bad'); }catch(err){ $('#banner').textContent='That file is not a Solo Planner data file.'; t.value=''; return; }
+    t.value='';
+    askConfirm('Replace all data?', 'Everything here will be replaced with the contents of “'+f.name+'” ('+d.assignments.length+' assignment'+(d.assignments.length===1?'':'s')+'). This cannot be undone. Use Export copy first if you want a backup.', 'Replace data', function(){
+      applyData(d); changed(); render();
+    });
+  };
+  r.readAsText(f);
+});
+
+document.addEventListener('submit', function(e){
+  if(e.target.id!=='aform') return;
+  e.preventDefault();
+  var err=$('#f-err'), name=$('#f-name').value.trim(), rate=num($('#f-rate').value), start=$('#f-start').value, end=$('#f-end').value;
+  if(!name){ err.textContent='Give the assignment a name.'; return; }
+  if(rate<=0){ err.textContent='Enter a rate above zero.'; return; }
+  if(!start){ err.textContent='Pick a start date.'; return; }
+  if(end && end<start){ err.textContent='The end date is before the start date.'; return; }
+  var amode=$('#f-amode').value, adays=Math.max(0,num($('#f-adays').value));
+  if(amode!=='none' && adays<=0){ err.textContent='Enter how many days the allowance is.'; return; }
+  var rec={ allowMode:amode, allowDays:amode==='none'?0:adays, name:name, rateType:$('#f-type').value, rate:rate, currency:$('#f-cur').value, start:start, end:end,
+    color:$('#f-color').value, perWeek:Math.min(7,Math.max(0,num($('#f-pw').value))), hoursPerDay:Math.min(24,Math.max(1,num($('#f-hpd').value)||8)), terms:Math.max(0,Math.round(num($('#f-terms').value))) };
+  if(editing){
+    var a=state.assignments.filter(function(x){ return x.id===editing; })[0];
+    if(a) Object.keys(rec).forEach(function(k){ a[k]=rec[k]; });
+    editing=null;
+  } else {
+    rec.id=uid();
+    state.assignments.push(rec);
+  }
+  changed(); render();
+});
+
+var VIEWS=['planner','timesheet','income','reports','assignments'];
+document.addEventListener('submit', async function(e){
+  var f=e.target;
+  if(f.id==='lockform'){
+    e.preventDefault();
+    var err=$('#pw-err'), p1=$('#pw1').value, mode=f.getAttribute('data-mode');
+    if(mode==='set'){
+      if(p1.length<4){ err.textContent='Use at least 4 characters.'; return; }
+      if(p1!==$('#pw2').value){ err.textContent='The passwords do not match.'; return; }
+      if(!(await pwSet(p1))){ err.textContent='This browser blocked saving the password. Check that site data is allowed.'; return; }
+      setUnlocked(true); render();
+    } else {
+      if(await pwCheck(p1)){ setUnlocked(true); render(); }
+      else { err.textContent='Wrong password.'; $('#pw1').value=''; $('#pw1').focus(); }
+    }
+  } else if(f.id==='pwform'){
+    e.preventDefault();
+    var er=$('#pwc-err'), n1=$('#pwn1').value;
+    if(!(await pwCheck($('#pwc').value))){ er.textContent='The current password is wrong.'; return; }
+    if(n1.length<4){ er.textContent='Use at least 4 characters.'; return; }
+    if(n1!==$('#pwn2').value){ er.textContent='The new passwords do not match.'; return; }
+    if(!(await pwSet(n1))){ er.textContent='Could not save the password.'; return; }
+    pwChange=false; render();
+  }
+});
+
+function route(){
+  var h=location.hash.replace('#','');
+  view = VIEWS.indexOf(h)>-1 ? h : 'planner';
+  render();
+}
+window.addEventListener('hashchange', route);
+
+view = VIEWS.indexOf(location.hash.replace('#',''))>-1 ? location.hash.replace('#','') : 'planner';
+setStatus();
+boot();
+})();
+</script>
+</body>
+</html>
