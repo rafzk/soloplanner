@@ -35,6 +35,8 @@ Planned days per week, one row per client.
 
 - **Week view:** 14 weeks at a time. Weeks you leave alone follow the client's default. Change a cell to override it, or clear it to go back to the default. "Reset row" restores the default for the weeks shown (with undo). A legend explains the shading.
 - **Month view:** a read-only overview per month against capacity. Select a month, or use "Open weeks", to edit its weeks.
+- **Used days:** under each planned number (current and past weeks or months) a small "x used" shows the days already logged in the Timesheet, with ▲ when it is more than planned. A "Used days (Timesheet)" row sums them. Hourly work is converted to days using Hours per day.
+- Only clients that run during the dates on screen are listed. Finished (or not yet started) clients are hidden, with a note and a "Show" link under the table. Go back in time and a client appears again for the weeks it ran.
 - **Capacity** is your working days per week (default 5; set it in Clients › Settings).
 
 ### Timesheet
@@ -75,7 +77,7 @@ Client list first; "Add client" opens the form.
 
 | Group | Fields |
 |---|---|
-| Client | Name, Role or type of work (optional, for example "Senior data analyst"; shown next to the rate on Today, Planner, Timesheet, Reports and the client list, and exported in the CSV), Description (optional free text, shown in the client list), Color |
+| Client | Name, Role or type of work (optional, for example "Senior data analyst"; shown next to the rate on Today, Planner, Timesheet, Reports and the client list, and exported in the CSV), Description (optional free text, shown in the client list and exported in the CSV), Color |
 | Billing | Day or hourly rate, Rate, Currency, Hours per day (hourly only) |
 | Dates and payment | Start, End (optional), Payment terms (days) |
 | Days | Days I plan to work per week, Contract allowance, Contract days |

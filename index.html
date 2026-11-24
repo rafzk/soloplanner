@@ -94,6 +94,10 @@ tr.noterow td,tr.noterow th{background:color-mix(in srgb,var(--accent) 6%,var(--
 .noterow label{display:grid;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
 .nline{margin:8px 0;font-size:14px}
 td.tot small{display:block;color:var(--muted);font-size:11px}
+small.used{display:block;color:var(--muted);font-size:11px;font-family:var(--font-num);line-height:1.3;margin-top:2px}
+small.used.over{color:var(--crit);font-weight:600}
+button.pm small.used{color:inherit;opacity:.85}
+button.pm small.used.over{color:inherit;opacity:1;font-weight:700}
 tr.sum th,tr.sum td{background:color-mix(in srgb,var(--muted) 6%,var(--surface));font-weight:500}
 .over{color:var(--crit);font-weight:600}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:22px}
@@ -762,29 +766,44 @@ function shortMonth(ym){ return parse(ym+'-01').toLocaleDateString(LOC(),{month:
 function monthPlanned(a,ym){ var n=monthEndDate(ym).getDate(), t=0, i; for(i=1;i<=n;i++) t+=plannedOnDate(a, ym+'-'+pad(i)); return t; }
 function workdaysIn(ym){ var n=monthEndDate(ym).getDate(), c=0, i, g; for(i=1;i<=n;i++){ g=parse(ym+'-'+pad(i)).getDay(); if(g>0 && g<6) c++; } return c; }
 function legendHTML(){ return '<p class="legend noprint" aria-hidden="true">Fewer days <i></i><i></i><i></i><i></i><i></i> More days</p>'; }
+/* The Planner lists only clients that run during the dates on screen; finished (or not yet started) ones can be shown on request. */
+var plShowAll = false;
+function plannerClients(fromISO, toISO){
+  var inRangeRows=state.assignments.filter(function(a){ return a.start<=toISO && (!a.end || a.end>=fromISO); });
+  return { rows: plShowAll ? state.assignments : inRangeRows, hidden: state.assignments.length-inRangeRows.length };
+}
+function plannerNote(pc){
+  if(!pc.hidden) return '';
+  return '<p class="foot noprint">'+(plShowAll
+    ? 'Showing all clients, including '+pc.hidden+' outside these dates. <button class="hlink under" data-act="p-showall">Hide them</button>'
+    : pc.hidden+' client'+(pc.hidden===1?'':'s')+' outside these dates hidden (finished or not started yet). <button class="hlink under" data-act="p-showall">Show</button>')+'</p>';
+}
 function renderPlannerMonths(){
   var months=[], i; for(i=0;i<12;i++) months.push(shiftMonth(plMonthStart,i));
-  var cur=ymOf(today), caps=months.map(function(m){ return workdaysIn(m)*CAP()/5; }), tots=months.map(function(){ return 0; });
+  var cur=ymOf(today), caps=months.map(function(m){ return workdaysIn(m)*CAP()/5; }), tots=months.map(function(){ return 0; }), usedTots=months.map(function(){ return 0; });
   var h='<div class="bar"><h2>Planner</h2></div>'+
     '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-month')+
     navGroup('p-prev','p-next','<span class="lbl">'+shortMonth(months[0])+' – '+shortMonth(months[11])+'</span>','Back 3 months','Forward 3 months')+
     '<button class="btn" data-act="p-today">Today</button></div>'+
-    '<p class="hint">Planned days per month, worked out from the weekly plan. Capacity is your working days per week ('+r1(CAP())+') across the weekdays in the month. To change the plan, use “Open weeks” under a month, or select any month.</p>'+legendHTML()+
+    '<p class="hint">Planned days per month, worked out from the weekly plan. Capacity is your working days per week ('+r1(CAP())+') across the weekdays in the month. The small number under each month is the days already logged in the Timesheet (▲ means more than planned). To change the plan, use “Open weeks” under a month, or select any month.</p>'+legendHTML()+
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Month</th>'+
     months.map(function(ym){ return '<th class="'+(ym===cur?'now':'')+'"><button class="hlink under" data-pmonth="'+ym+'" title="Open the weeks of '+monthLabel(ym)+'">'+shortMonth(ym)+'</button></th>'; }).join('')+'</tr></thead><tbody>';
-  state.assignments.forEach(function(a){
+  var pc=plannerClients(months[0]+'-01', iso(monthEndDate(months[11])));
+  pc.rows.forEach(function(a){
     h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+'</small></th>'+
       months.map(function(ym,mi){
         var v=round2(monthPlanned(a,ym)); tots[mi]+=v;
-        var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0;
-        return '<td class="'+(ym===cur?'now':'')+'"><button class="pm l'+lv+'" data-pmonth="'+ym+'" aria-label="'+esc(a.name)+', '+monthLabel(ym)+', '+r1(v)+' planned days. Open weeks">'+(v?r1(v):'–')+'</button></td>';
+        var u=round2(usedBetween(a, ym+'-01', iso(monthEndDate(ym)))); usedTots[mi]+=u;
+        var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0, showU=ym<=cur;
+        return '<td class="'+(ym===cur?'now':'')+'"><button class="pm l'+lv+'" data-pmonth="'+ym+'" aria-label="'+esc(a.name)+', '+monthLabel(ym)+', '+r1(v)+' planned days'+(showU?', '+r1(u)+' used':'')+'. Open weeks">'+(v?r1(v):'–')+(showU?'<small class="used'+(u>v+0.004?' over':'')+'">'+r1(u)+' used'+(u>v+0.004?' ▲':'')+'</small>':'')+'</button></td>';
       }).join('')+'</tr>';
   });
   h+='<tr class="sum"><th class="sticky">Planned days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+(t?r1(round2(t)):'')+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Used days (Timesheet)</th>'+usedTots.map(function(t,mi){ return months[mi]>cur ? '<td></td>' : '<td class="num">'+r1(round2(t))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Capacity</th>'+caps.map(function(c){ return '<td class="num">'+r1(round2(c))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Free days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+r1(round2(Math.max(0,caps[mi]-t)))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Edit weeks</th>'+months.map(function(ym){ return '<td><button class="btn small" data-pmonth="'+ym+'">Open weeks</button></td>'; }).join('')+'</tr>'+
-     '</tbody></table></div>';
+     '</tbody></table></div>'+plannerNote(pc);
   return h;
 }
 function renderPlanner(){
@@ -799,19 +818,25 @@ function renderPlanner(){
     '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-week')+
     navGroup('p-prev','p-next','<span class="lbl">'+fmtDay(parse(weeks[0]))+' – '+fmtDayY(pLast)+'</span>','Back 4 weeks','Forward 4 weeks')+
     '<button class="btn" data-act="p-today">Today</button></div>'+
-    '<p class="hint">The days you plan to work each week, one row per client. Capacity is '+r1(CAP())+' days a week (change it in Clients › Settings). Weeks you leave alone follow the client’s default; change any cell to override it, or clear it to go back to the default.</p>'+legendHTML()+
+    '<p class="hint">The days you plan to work each week, one row per client. Capacity is '+r1(CAP())+' days a week (change it in Clients › Settings). Weeks you leave alone follow the client’s default; change any cell to override it, or clear it to go back to the default. The small number under each week is the days already logged in the Timesheet (▲ means more than planned).</p>'+legendHTML()+
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Week starting</th>'+
     weeks.map(function(w){ return '<th class="'+(w===thisW?'now':'')+'">'+fmtDay(parse(w))+'</th>'; }).join('')+'</tr></thead><tbody>';
-  state.assignments.forEach(function(a){
+  var pc=plannerClients(weeks[0], iso(pLast));
+  pc.rows.forEach(function(a){
     h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+' · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset row</button></small></th>'+
       weeks.map(function(w){
-        var v=plannedDays(a,w);
-        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"></td>';
+        var v=plannedDays(a,w), u=usedDays(a,w);
+        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"'+(w<=thisW?' aria-describedby="u-'+a.id+'-'+w+'"':'')+'>'+
+          (w<=thisW ? '<small class="used'+(u>v+0.004?' over':'')+'" id="u-'+a.id+'-'+w+'" title="Days logged in the Timesheet this week">'+r1(round2(u))+' used'+(u>v+0.004?' ▲':'')+'</small>' : '')+'</td>';
       }).join('')+'</tr>';
   });
   h+='<tr class="sum"><th class="sticky">Planned days</th>'+weeks.map(function(w){ return '<td class="num" data-tot="'+w+'"></td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Used days (Timesheet)</th>'+weeks.map(function(w){
+        if(w>thisW) return '<td></td>';
+        var ut=0; state.assignments.forEach(function(a){ ut+=usedDays(a,w); });
+        return '<td class="num">'+(ut?r1(round2(ut)):'0')+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Free days (of '+r1(CAP())+')</th>'+weeks.map(function(w){ return '<td class="num" data-free="'+w+'"></td>'; }).join('')+'</tr>'+
-     '</tbody></table></div>';
+     '</tbody></table></div>'+plannerNote(pc);
   return h;
 }
 function refreshPlannerTotals(){
@@ -1122,10 +1147,10 @@ function exportReportCSV(){
   var fname = repFilter==='all' ? 'All' : byId(repFilter).name;
   row(['Solo Planner report', R.P.label]); row(['From', R.f]); row(['To', R.t]); row(['Clients', fname]); row(['Working days (Mon-Fri)', R.work]); row([]);
   row(['Summary']);
-  row(['Client','Role','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
+  row(['Client','Role','Description','Billing','Rate','Currency','Logged','Unit','Day equivalent','Hours','Planned days','Earned','Received']);
   R.as.forEach(function(a){
     var s=R.per[a.id]; if(!(s.qty || s.planned>0.004 || s.received)) return;
-    row([a.name, a.role||'', a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
+    row([a.name, a.role||'', a.description||'', a.rateType==='day'?'Day rate':'Hourly', a.rate, a.currency, round2(s.qty), unitWord(a), round2(s.deq), round2(s.hours), round2(s.planned), round2(s.earned), round2(s.received)]);
   });
   row([]); row(['Detail']);
   row(['Date','Weekday','Client','Quantity','Unit','Day equivalent','Hours','Rate','Currency','Amount','Note']);
@@ -1291,6 +1316,7 @@ document.addEventListener('click', function(e){
   else if(act==='toast-close'){ hideToast(); }
   else if(act==='p-prev'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,-3); else plannerStart=addDays(plannerStart,-28); render(); }
   else if(act==='p-next'){ if(plMode==='month') plMonthStart=shiftMonth(plMonthStart,3); else plannerStart=addDays(plannerStart,28); render(); }
+  else if(act==='p-showall'){ plShowAll=!plShowAll; render(); }
   else if(act==='p-today'){ plannerStart=addDays(monday(today),-7); plMonthStart=shiftMonth(ymOf(today),-1); render(); }
   else if(act==='p-mode-month'){ if(plMode!=='month'){ plMonthStart=shiftMonth(ymOf(addDays(plannerStart,3)),0); plMode='month'; render(); } }
   else if(act==='p-mode-week'){ if(plMode!=='week'){ plMode='week'; render(); } }
@@ -1425,6 +1451,7 @@ document.addEventListener('change', function(e){
     var v=blank?defaultWeek(a,p[1]):Math.min(7,Math.max(0,round2(num(t.value))));
     if(blank||v===defaultWeek(a,p[1])) delete state.plan[k]; else state.plan[k]=v;
     t.value=planVal(a,p[1]); t.className='cell l'+Math.min(5,Math.ceil(v));
+    var usm=$('#u-'+a.id+'-'+p[1]); if(usm){ var uu=usedDays(a,p[1]); usm.className='used'+(uu>v+0.004?' over':''); usm.textContent=r1(round2(uu))+' used'+(uu>v+0.004?' ▲':''); }
     refreshPlannerTotals(); changed();
   } else if(t.hasAttribute('data-entry')){
     var k2=t.getAttribute('data-entry'), a2=byId(k2.split('|')[0]); if(!a2) return;
