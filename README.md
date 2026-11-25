@@ -12,6 +12,16 @@ A planner for consultants and freelancers who work for several clients. In a sin
 - Optional password lock and a "hide amounts" toggle (remembered in the browser).
 - Undo for destructive actions, keyboard navigation in grids, light and dark themes, print-friendly reports.
 
+## Screenshots
+
+Taken with the built-in example data.
+
+| | |
+|---|---|
+| **Today**<br>![Today](docs/screenshots/today.png) | **Planner**<br>![Planner](docs/screenshots/planner.png) |
+| **Timesheet**<br>![Timesheet](docs/screenshots/timesheet.png) | **Income**<br>![Income](docs/screenshots/income.png) |
+| **Reports**<br>![Reports](docs/screenshots/reports.png) | **Clients**<br>![Clients](docs/screenshots/assignments.png) |
+
 ## Getting started
 
 1. Open [index.html](index.html) in Chrome or Edge.
