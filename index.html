@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -64,37 +64,64 @@ table{border-collapse:collapse;width:100%}
 table.grid th,table.grid td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
 table.grid thead th{font-size:12px;font-weight:500;color:var(--muted);background:var(--surface)}
 table.grid tbody tr:last-child th,table.grid tbody tr:last-child td{border-bottom:0}
-th.sticky{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1;min-width:170px;max-width:220px;box-shadow:1px 0 0 var(--line)}
-th.rowh{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;font-weight:500;white-space:normal}
-th.rowh small{grid-column:2;color:var(--muted);font-weight:400;font-size:12px}
+th.sticky{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1;width:220px;min-width:170px;max-width:220px;box-shadow:1px 0 0 var(--line)}
+table.grid th.sticky{text-align:left}
+table.grid th.rowh{font-weight:500;white-space:normal;vertical-align:middle}
+th.rowh .dot{margin-right:8px}
+th.rowh small{display:block;margin-left:18px;color:var(--muted);font-weight:400;font-size:12px;line-height:1.4}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 #f-color{width:56px;height:36px;padding:2px;cursor:pointer}
 .now{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
-thead th.now{color:var(--accent);font-weight:600}
+table.grid thead th.now{color:var(--accent);font-weight:600;background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+table.grid thead th.we{background:color-mix(in srgb,var(--muted) 8%,var(--surface))}
 .we{background:color-mix(in srgb,var(--muted) 8%,var(--surface))}
 input.cell{width:58px;text-align:center;font-family:var(--font-num);border:1px solid transparent;border-radius:6px;padding:8px 2px;background:transparent}
 input.cell:hover{border-color:var(--line)}
 input.cell:focus{border-color:var(--accent);background:var(--surface)}
-input.cell.l1{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
-input.cell.l2{background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
-input.cell.l3{background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
-input.cell.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
-input.cell.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
+input.cell.l1{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+input.cell.l2{background:color-mix(in srgb,var(--accent) 32%,var(--surface))}
+input.cell.l3{background:color-mix(in srgb,var(--accent) 46%,var(--surface))}
+input.cell.l4{background:color-mix(in srgb,var(--accent) 62%,var(--surface))}
+input.cell.l5{background:color-mix(in srgb,var(--accent) 80%,var(--surface));color:var(--accent-ink)}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 table.grid td{position:relative}
-/* Cell actions: 24px targets in the corners, readable at rest */
-.x,.nb{position:absolute;right:0;width:24px;height:24px;border:0;background:none;cursor:pointer;color:var(--muted);line-height:1;padding:0;display:grid;place-items:center;border-radius:6px}
-.x{top:0;font-size:17px;opacity:.8}
-.nb{bottom:0;font-size:14px;opacity:.75}
-.x:hover{color:var(--crit);opacity:1;background:var(--crit-soft)}
-.nb:hover{opacity:1;background:var(--accent-soft)}
-.nb.on{color:var(--accent);opacity:1}
+/* Timesheet cell: a visible box with its unit, and the note / clear buttons right next to it (shown on hover or focus, and always for a note that exists) */
+.cw{display:inline-flex;align-items:center;gap:4px;vertical-align:middle}
+.iw{position:relative;display:inline-block}
+.iw .cu{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);pointer-events:none}
+input.cell.tcell{width:76px;padding:8px 20px 8px 6px;border-color:var(--line);background:var(--surface)}
+input.cell.tcell::placeholder{color:var(--muted)}
+.ca{display:inline-flex;flex-direction:column;justify-content:center;gap:2px;width:24px;min-height:46px}
+.ca button{width:24px;height:22px;border:0;background:none;cursor:pointer;color:var(--muted);line-height:1;padding:0;display:grid;place-items:center;border-radius:6px;opacity:0;transition:opacity .12s}
+.ca .x{font-size:17px}
+.ca .nb{font-size:14px}
+.ca .nb.on{color:var(--accent);opacity:1}
+td:hover .ca button,td:focus-within .ca button{opacity:.85}
+@media (hover:none){ .ca button{opacity:.7} }
+.ca .x:hover{color:var(--crit);opacity:1;background:var(--crit-soft)}
+.ca .nb:hover{opacity:1;background:var(--accent-soft)}
+table.grid.mgrid .cw{display:block}
+table.grid.mgrid .cu{display:none}
+table.grid.mgrid .ca{position:absolute;right:0;bottom:0;width:auto;min-height:0;flex-direction:row;background:transparent;border-radius:6px}
+table.grid.mgrid td:hover .ca,table.grid.mgrid td:focus-within .ca{background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+table.grid td.tot{min-width:84px;padding-right:12px}
+table.grid.mgrid .ca button{width:18px;height:18px;font-size:12px}
+.tg{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-weight:500}
+.tg input{width:16px;height:16px;margin:0}
+.hint .tip{color:var(--muted);font-size:13px}
+.scrollx{overflow-x:auto}
+table.inc th.l,table.inc td.l{text-align:left}
 tr.noterow td,tr.noterow th{background:color-mix(in srgb,var(--accent) 6%,var(--surface));text-align:left;white-space:normal}
 .noterow textarea,.tcard textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);color:var(--ink);resize:vertical}
 .noterow label{display:grid;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
 .nline{margin:8px 0;font-size:14px}
 td.tot small{display:block;color:var(--muted);font-size:11px}
-small.used{display:block;color:var(--muted);font-size:11px;font-family:var(--font-num);line-height:1.3;margin-top:2px}
+/* "Reset row" only appears when you hover or focus the row (always visible on touch screens) */
+@media (hover:hover){
+  table.grid .rr{opacity:0;transition:opacity .15s}
+  table.grid tr:hover .rr,table.grid tr:focus-within .rr{opacity:1}
+}
+small.used{display:block;color:var(--muted);font-size:12px;font-family:var(--font-num);line-height:1.3;margin-top:2px}
 small.used.over{color:var(--crit);font-weight:600}
 button.pm small.used{color:inherit;opacity:.85}
 button.pm small.used.over{color:inherit;opacity:1;font-weight:700}
@@ -111,20 +138,33 @@ tr.sum th,tr.sum td{background:color-mix(in srgb,var(--muted) 6%,var(--surface))
 .meter{height:6px;border-radius:99px;background:color-mix(in srgb,var(--muted) 18%,var(--surface));margin-top:8px;overflow:hidden}
 .meter span{display:block;height:100%;background:var(--accent);border-radius:99px}
 .month{margin-bottom:20px}
-.month h3{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin:0 0 8px}
-.month h3 .mt{font-family:var(--font-num);font-weight:400;color:var(--muted);font-size:13px}
-.month.cur h3::after{content:"This month";font-size:11px;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-weight:600;margin-left:8px;order:-1}
+.month h3{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:0 0 8px}
+.month h3 .mt{margin-left:auto;font-family:var(--font-num);font-weight:400;color:var(--muted);font-size:13px}
+.chip{font-size:11px;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px;font-weight:600}
+.chip.ended{background:color-mix(in srgb,var(--muted) 14%,var(--surface));color:var(--muted)}
+.chip.soon{background:var(--warn-soft);color:var(--warn)}
+.arow.ended{opacity:.85}
+.arow.ended strong{color:var(--muted)}
+.arow .meta{margin-top:2px}
+.arow .ml{display:inline-block;width:76px;font-size:12px;opacity:.8}
 table.inc th,table.inc td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
 table.inc th:first-child,table.inc td:first-child{text-align:left}
 table.inc thead th{font-size:12px;font-weight:500;color:var(--muted)}
 table.inc tbody tr:last-child td{border-bottom:0}
 table.inc td small{display:block;color:var(--muted);font-size:11px}
 table.inc td small .btn{margin-top:4px}
-.amtwrap{display:inline-flex;align-items:center;gap:4px}
-.amtwrap .cur{color:var(--muted)}
-input.amt{width:92px;text-align:right;font-family:var(--font-num);border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface)}
-input.inv{width:104px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);text-align:right}
-input.dt{width:128px;border:1px solid var(--line);border-radius:6px;padding:2px 4px;font-size:12px;background:var(--surface)}
+/* Income controls share one height and one width rhythm: number + icon, date, amount */
+input.amt,input.inv,input.dt{height:32px;font-size:13px;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:0 8px}
+input.amt{width:112px;text-align:right;font-family:var(--font-num);padding-left:24px}
+input.inv{width:100px;text-align:left}
+input.dt{width:136px}
+input.inv[data-sugg]::placeholder{color:var(--accent);opacity:.9}
+.amtwrap{position:relative;display:inline-block}
+.amtwrap .cur{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+.invc{display:inline-flex;align-items:center;gap:4px}
+.ibtn{width:32px;height:32px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.ibtn:hover{color:var(--accent);border-color:var(--accent)}
+.ibtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
 .pill.good{background:var(--good-soft);color:var(--good)}
 .pill.warn{background:var(--warn-soft);color:var(--warn)}
@@ -168,7 +208,12 @@ form.af .gt{grid-column:1/-1;font-size:12px;text-transform:uppercase;letter-spac
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 body.locked nav.tabs,body.locked #status,body.locked #banner,body.locked #lockbtn,body.locked #eyebtn,body.locked #hdate,body.locked #toast{display:none!important}
 dialog#confirm{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:20px 22px;width:calc(100% - 32px);max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
-dialog#confirm::backdrop{background:rgba(10,16,22,.5)}
+dialog#confirm::backdrop,dialog#docdlg::backdrop{background:rgba(10,16,22,.5)}
+dialog#docdlg{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:20px 22px;width:calc(100% - 32px);max-width:520px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.docs{margin-top:10px;display:grid;gap:4px;justify-items:start}
+.doc{display:flex;align-items:center;gap:4px;font-size:13px}
+.doc svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.doc .hlink{display:inline-flex;align-items:center;gap:6px}
 dialog#confirm p{color:var(--muted);margin:8px 0 18px}
 dialog#confirm .ctl{justify-content:flex-end}
 .btn.danger.solid{background:var(--crit);border-color:var(--crit);color:#fff}
@@ -200,18 +245,18 @@ details.menu .pop button:hover{background:var(--accent-soft)}
 button.pm{min-width:52px;border:1px solid transparent;border-radius:6px;padding:6px 4px;background:transparent;cursor:pointer;font-family:var(--font-num);color:var(--ink)}
 button.pm:hover{border-color:var(--accent)}
 button.pm.l0{color:var(--muted)}
-button.pm.l1{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
-button.pm.l2{background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
-button.pm.l3{background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
-button.pm.l4{background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
-button.pm.l5{background:color-mix(in srgb,var(--accent) 66%,var(--surface));color:var(--accent-ink)}
+button.pm.l1{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+button.pm.l2{background:color-mix(in srgb,var(--accent) 32%,var(--surface))}
+button.pm.l3{background:color-mix(in srgb,var(--accent) 46%,var(--surface))}
+button.pm.l4{background:color-mix(in srgb,var(--accent) 62%,var(--surface))}
+button.pm.l5{background:color-mix(in srgb,var(--accent) 80%,var(--surface));color:var(--accent-ink)}
 .legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:0 0 10px}
 .legend i{display:inline-block;width:22px;height:12px;border-radius:3px}
-.legend i:nth-of-type(1){background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
-.legend i:nth-of-type(2){background:color-mix(in srgb,var(--accent) 26%,var(--surface))}
-.legend i:nth-of-type(3){background:color-mix(in srgb,var(--accent) 38%,var(--surface))}
-.legend i:nth-of-type(4){background:color-mix(in srgb,var(--accent) 52%,var(--surface))}
-.legend i:nth-of-type(5){background:color-mix(in srgb,var(--accent) 66%,var(--surface))}
+.legend i:nth-of-type(1){background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+.legend i:nth-of-type(2){background:color-mix(in srgb,var(--accent) 32%,var(--surface))}
+.legend i:nth-of-type(3){background:color-mix(in srgb,var(--accent) 46%,var(--surface))}
+.legend i:nth-of-type(4){background:color-mix(in srgb,var(--accent) 62%,var(--surface))}
+.legend i:nth-of-type(5){background:color-mix(in srgb,var(--accent) 80%,var(--surface))}
 .tfoot{display:flex;justify-content:flex-end;margin-top:8px}
 input.mask{-webkit-text-security:disc}
 #eyebtn{display:inline-flex;align-items:center;gap:6px}
@@ -249,7 +294,8 @@ table.inc tr.rtot td{font-weight:600;background:color-mix(in srgb,var(--muted) 6
 #toast .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 50%,transparent)}
 #toast .tx{border:0;background:none;color:var(--bg);font-size:20px;line-height:1;cursor:pointer;opacity:.8;padding:0 4px}
 /* Report chart */
-svg.ch{width:100%;height:auto;display:block}
+svg.ch{width:100%;height:auto;max-height:260px;min-width:520px;display:block}
+table.inc tr.idle td{color:var(--muted)}
 svg.ch text{fill:var(--muted);font:11px var(--font-num)}
 svg.ch text.vl{fill:var(--ink)}
 svg.ch .gl{stroke:var(--line);stroke-width:1}
@@ -289,10 +335,22 @@ details.past>summary{cursor:pointer;font-weight:600;font-size:18px;margin:28px 0
     <button class="tab" data-view="income">Income</button>
     <button class="tab" data-view="reports">Reports</button>
     <button class="tab" data-view="assignments">Clients</button>
+    <button class="tab" data-view="settings">Settings</button>
   </nav>
   <main id="main"></main>
 </div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="docdlg" aria-labelledby="dd-title">
+  <h3 id="dd-title">Add a document</h3>
+  <p class="hint" id="dd-client" style="margin:4px 0 12px"></p>
+  <form class="f" id="docform" novalidate>
+    <label>Type<select id="dd-type"><option>Contract</option><option>Amendment</option><option>SOW</option><option>Other</option></select></label>
+    <label>Signed or issued on<input type="date" id="dd-date"></label>
+    <label style="grid-column:1/-1">Label (optional)<input id="dd-label" placeholder="e.g. NDA, Renewal 2027"><span class="help">Used in the file name when the type is Other.</span></label>
+    <label style="grid-column:1/-1">File<input type="file" id="dd-file" accept=".pdf,application/pdf,image/*,.doc,.docx"></label>
+    <div class="row"><button class="btn primary" type="submit">Save document</button><button class="btn" type="button" data-act="dd-cancel">Cancel</button><span class="err" id="dd-err" role="alert"></span></div>
+  </form>
+</dialog>
 <dialog id="confirm" aria-labelledby="cf-title" aria-describedby="cf-msg">
   <h3 id="cf-title"></h3>
   <p id="cf-msg"></p>
@@ -333,7 +391,10 @@ var byId = function(id){ return state.assignments.filter(function(x){ return x.i
 
 var curSym = function(cur){ try{ var p=new Intl.NumberFormat(LOC(),{style:'currency',currency:cur}).formatToParts(0).filter(function(x){ return x.type==='currency'; })[0]; return p?p.value:cur+' '; }catch(e){ return cur+' '; } };
 var mk = function(){ return masked?' mask':''; };
-var money = function(v,cur){ if(masked) return curSym(cur)+'••••'; try{ return new Intl.NumberFormat(LOC(),{style:'currency',currency:cur,minimumFractionDigits:0,maximumFractionDigits:2}).format(v); }catch(e){ return cur+' '+v.toFixed(2); } };
+/* Whole amounts show no decimals (€7,852); anything else always shows two (€5,909.60) */
+var money = function(v,cur){ if(masked) return curSym(cur)+'••••'; var f=Math.abs(v-Math.round(v))<0.005?0:2; try{ return new Intl.NumberFormat(LOC(),{style:'currency',currency:cur,minimumFractionDigits:f,maximumFractionDigits:2}).format(v); }catch(e){ return cur+' '+v.toFixed(2); } };
+var ICON_CLIP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+var ICON_FILE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
 var num = function(v){ var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:0; };
 var fmtN = function(v){ return v ? String(Math.round(v*100)/100) : ''; };
 var round2 = function(v){ return Math.round(v*100)/100; };
@@ -350,7 +411,7 @@ var plMonthStart = ymOf(new Date(today.getFullYear(), today.getMonth()-1, 1));
 var weekAnchor = monday(today);
 var tsMode = 'week';
 var tsMonth = ymOf(today);
-var editing = null, showForm = false, pastOpen = false;
+var editing = null, showForm = false, pastOpen = false, endedOpen = false;
 var pendingConfirm = null;
 function askConfirm(title, msg, yesLabel, fn){
   var dlg=$('#confirm');
@@ -540,17 +601,45 @@ async function attachInvoice(key,f){
     else await write();
   }catch(e){ toast('Could not save the invoice file.'); }
 }
-async function openInvoice(key){
-  var inv=state.invoices[key]; if(!inv || !inv.file) return;
-  if(!invDir){ toast('Choose the invoice folder in Clients › Invoice folder first.'); return; }
-  if(!(await invDirReady())){ toast('Allow access to the invoice folder to open the file.'); return; }
+/* Opens any file stored in the folder (an invoice or a client document) from its relative path */
+async function openStored(path){
+  if(!path) return;
+  if(!invDir){ toast('Choose the folder in Settings › Invoice folder first.'); return; }
+  if(!(await invDirReady())){ toast('Allow access to the folder to open the file.'); return; }
   try{
-    var parts=inv.file.split('/'), dir=invDir, i;
+    var parts=path.split('/'), dir=invDir, i;
     for(i=0;i<parts.length-1;i++) dir=await dir.getDirectoryHandle(parts[i]);
     var file=await (await dir.getFileHandle(parts[parts.length-1])).getFile(), url=URL.createObjectURL(file);
     if(!window.open(url,'_blank')){ var a2=document.createElement('a'); a2.href=url; a2.download=file.name; document.body.appendChild(a2); a2.click(); a2.remove(); }
     setTimeout(function(){ URL.revokeObjectURL(url); },60000);
-  }catch(e){ toast('File not found in the invoice folder: '+inv.file); }
+  }catch(e){ toast('File not found in the folder: '+path); }
+}
+function openInvoice(key){ var inv=state.invoices[key]; if(inv && inv.file) return openStored(inv.file); }
+/* Client documents (contract, amendment, SOW, other) are copied to Contracts/Client_Type_YYYY-MM-DD.ext inside the same folder */
+var docClient = null;
+function openDocDialog(id){
+  var a=byId(id); if(!a) return;
+  docClient=id; $('#dd-client').textContent=a.name;
+  $('#dd-type').value='Contract'; $('#dd-label').value=''; $('#dd-date').value=todayISO; $('#dd-file').value=''; $('#dd-err').textContent='';
+  var d=$('#docdlg'); if(d.showModal){ if(!d.open) d.showModal(); }
+}
+async function saveDoc(){
+  var a=byId(docClient), err=$('#dd-err'), f=$('#dd-file').files[0], type=$('#dd-type').value, label=$('#dd-label').value.trim(), date=$('#dd-date').value;
+  if(!a) return;
+  if(!f){ err.textContent='Choose the file.'; return; }
+  if(!date){ err.textContent='Pick the date.'; return; }
+  if(!(await invDirReady())){ err.textContent='Allow access to the folder to continue.'; return; }
+  var ext=((/\.([a-z0-9]{2,4})$/i.exec(f.name)||[])[1]||'pdf').toLowerCase();
+  var base=safeName(a.name)+'_'+safeName((type==='Other' && label) ? label : type)+'_'+date, name=base+'.'+ext, n=1;
+  try{
+    var dir=await invDir.getDirectoryHandle('Contracts',{create:true});
+    var taken=async function(nm){ try{ await dir.getFileHandle(nm); return true; }catch(e){ return false; } };
+    while(await taken(name)){ n++; name=base+'-'+n+'.'+ext; } /* never overwrite an existing document */
+    var h=await dir.getFileHandle(name,{create:true}), w=await h.createWritable();
+    await w.write(f); await w.close();
+    a.docs=a.docs||[]; a.docs.push({ id:uid(), type:type, label:label, date:date, file:'Contracts/'+name });
+    $('#docdlg').close(); changed(); render(); toast('Saved Contracts/'+name);
+  }catch(e){ err.textContent='Could not save the file in the folder.'; }
 }
 async function boot(){
   try{ invDir=(await idbGet('invdir'))||null; }catch(e){}
@@ -611,6 +700,7 @@ function plannedOnDate(a,dISO){
   return days/n;
 }
 var r1 = function(v){ return String(Math.round(v*100)/100); };
+var f1 = function(v){ return String(Math.round(v*10)/10); }; /* one decimal, for the small "used" figures */
 function dayEq(a,q){ return a.rateType==='day' ? q : q/a.hoursPerDay; }
 function usedDays(a,w){
   var t=0,i; for(i=0;i<7;i++) t+=state.entries[a.id+'|'+iso(addDays(parse(w),i))]||0;
@@ -651,10 +741,10 @@ function bankHTML(){
   state.assignments.forEach(function(a){
     var b=bankAt(a,w); if(!b) return;
     var basis=b.mode==='week'?'this week':(b.mode==='month'?'this month':'total pot');
-    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td><td>'+basis+'</td><td class="num">'+(b.carried===null?'—':r1(b.carried))+'</td><td class="num">'+r1(b.allow)+'</td><td class="num">'+r1(b.used)+'</td><td class="num'+(b.balance<-0.004?' over':'')+'"><strong>'+r1(b.balance)+'</strong></td></tr>';
+    rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td><td class="l">'+basis+'</td><td class="num">'+(b.carried===null?'—':r1(b.carried)+' d')+'</td><td class="num">'+r1(b.allow)+' d</td><td class="num">'+r1(b.used)+' d</td><td class="num'+(b.balance<-0.004?' over':'')+'"><strong>'+r1(b.balance)+' d</strong></td></tr>';
   });
   if(!rows) return '<p class="foot" style="margin:0">No contract days set. Edit a client in the Clients tab and choose a contract allowance to see how many days you have left.</p>';
-  return '<h3 style="margin-bottom:8px">Contract days left, up to '+fmtDayY(addDays(parse(w),6))+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Client</th><th>Period</th><th>Carried in</th><th>New days</th><th>Logged</th><th>Days left</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="foot" style="margin:8px 0 0">Unused days roll over to later periods with no expiry. A negative number means you logged more days than the contract allows.</p>';
+  return '<h3 style="margin-bottom:8px">Contract days left, up to '+fmtDayY(addDays(parse(w),6))+'</h3><div class="scrollx"><table class="inc"><thead><tr><th>Client</th><th class="l">Period</th><th>Carried in</th><th>New days</th><th>Logged</th><th>Days left</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="foot" style="margin:8px 0 0">Unused days roll over to later periods with no expiry. A negative number means you logged more days than the contract allows.</p>';
 }
 
 function monthStats(a,ym){
@@ -794,12 +884,12 @@ function renderPlannerMonths(){
       months.map(function(ym,mi){
         var v=round2(monthPlanned(a,ym)); tots[mi]+=v;
         var u=round2(usedBetween(a, ym+'-01', iso(monthEndDate(ym)))); usedTots[mi]+=u;
-        var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0, showU=ym<=cur;
-        return '<td class="'+(ym===cur?'now':'')+'"><button class="pm l'+lv+'" data-pmonth="'+ym+'" aria-label="'+esc(a.name)+', '+monthLabel(ym)+', '+r1(v)+' planned days'+(showU?', '+r1(u)+' used':'')+'. Open weeks">'+(v?r1(v):'–')+(showU?'<small class="used'+(u>v+0.004?' over':'')+'">'+r1(u)+' used'+(u>v+0.004?' ▲':'')+'</small>':'')+'</button></td>';
+        var lv=v ? Math.min(5,Math.max(1,Math.ceil(v/caps[mi]*5))) : 0, showU=ym<=cur && (u>0.004 || v>0.004);
+        return '<td class="'+(ym===cur?'now':'')+'"><button class="pm l'+lv+'" data-pmonth="'+ym+'" aria-label="'+esc(a.name)+', '+monthLabel(ym)+', '+r1(v)+' planned days'+(showU?', '+f1(u)+' used':'')+'. Open weeks">'+(v?r1(v):'–')+'<small class="used'+(showU && u>v+0.004?' over':'')+'">'+(showU ? f1(u)+' used'+(u>v+0.004?' ▲':'') : '&nbsp;')+'</small></button></td>';
       }).join('')+'</tr>';
   });
-  h+='<tr class="sum"><th class="sticky">Planned days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+(t?r1(round2(t)):'')+'</td>'; }).join('')+'</tr>'+
-     '<tr class="sum"><th class="sticky">Used days (Timesheet)</th>'+usedTots.map(function(t,mi){ return months[mi]>cur ? '<td></td>' : '<td class="num">'+r1(round2(t))+'</td>'; }).join('')+'</tr>'+
+  h+='<tr class="sum"><th class="sticky">Planned days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+r1(round2(t))+'</td>'; }).join('')+'</tr>'+
+     '<tr class="sum"><th class="sticky">Used days (Timesheet)</th>'+usedTots.map(function(t,mi){ return months[mi]>cur ? '<td></td>' : '<td class="num">'+f1(t)+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Capacity</th>'+caps.map(function(c){ return '<td class="num">'+r1(round2(c))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Free days</th>'+tots.map(function(t,mi){ return '<td class="num'+(t>caps[mi]+0.004?' over':'')+'">'+r1(round2(Math.max(0,caps[mi]-t)))+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Edit weeks</th>'+months.map(function(ym){ return '<td><button class="btn small" data-pmonth="'+ym+'">Open weeks</button></td>'; }).join('')+'</tr>'+
@@ -811,30 +901,31 @@ function renderPlanner(){
   LS.set('solo-planner-seen-plan','1');
   if(plMode==='month') return renderPlannerMonths();
   var weeks=[], i;
-  for(i=0;i<14;i++) weeks.push(iso(addDays(plannerStart,i*7)));
+  for(i=0;i<12;i++) weeks.push(iso(addDays(plannerStart,i*7)));
   var thisW=iso(monday(today));
   var pLast=addDays(parse(weeks[weeks.length-1]),6);
   var h='<div class="bar"><h2>Planner</h2></div>'+
     '<div class="toolbar">'+seg([['p-mode-week','Week'],['p-mode-month','Month']],'p-mode-week')+
     navGroup('p-prev','p-next','<span class="lbl">'+fmtDay(parse(weeks[0]))+' – '+fmtDayY(pLast)+'</span>','Back 4 weeks','Forward 4 weeks')+
     '<button class="btn" data-act="p-today">Today</button></div>'+
-    '<p class="hint">The days you plan to work each week, one row per client. Capacity is '+r1(CAP())+' days a week (change it in Clients › Settings). Weeks you leave alone follow the client’s default; change any cell to override it, or clear it to go back to the default. The small number under each week is the days already logged in the Timesheet (▲ means more than planned).</p>'+legendHTML()+
+    '<p class="hint">The days you plan to work each week, one row per client. Capacity is '+r1(CAP())+' days a week (change it in Settings). Weeks you leave alone follow the client’s default; change any cell to override it, or clear it to go back to the default. The small number under each week is the days already logged in the Timesheet (▲ means more than planned).</p>'+legendHTML()+
     '<div class="scroll"><table class="grid"><thead><tr><th class="sticky">Week starting</th>'+
     weeks.map(function(w){ return '<th class="'+(w===thisW?'now':'')+'">'+fmtDay(parse(w))+'</th>'; }).join('')+'</tr></thead><tbody>';
   var pc=plannerClients(weeks[0], iso(pLast));
   pc.rows.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+' · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset these weeks to the default">Reset row</button></small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+'<span class="rr"> · <button class="hlink under" data-resetrow="'+a.id+'" title="Reset the weeks shown to the default">Reset row</button></span></small></th>'+
       weeks.map(function(w){
-        var v=plannedDays(a,w), u=usedDays(a,w);
-        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"'+(w<=thisW?' aria-describedby="u-'+a.id+'-'+w+'"':'')+'>'+
-          (w<=thisW ? '<small class="used'+(u>v+0.004?' over':'')+'" id="u-'+a.id+'-'+w+'" title="Days logged in the Timesheet this week">'+r1(round2(u))+' used'+(u>v+0.004?' ▲':'')+'</small>' : '')+'</td>';
+        var v=plannedDays(a,w), u=usedDays(a,w), showU=w<=thisW && (u>0.004 || v>0.004);
+        /* The "used" line always takes up its space, so every planned number sits at the same height */
+        return '<td class="'+(w===thisW?'now':'')+'"><input class="cell l'+Math.min(5,Math.ceil(v)) +'" inputmode="decimal" placeholder="–" data-plan="'+a.id+'|'+w+'" value="'+planVal(a,w)+'" aria-label="'+esc(a.name)+', week of '+w+', planned days"'+(showU?' aria-describedby="u-'+a.id+'-'+w+'"':'')+'>'+
+          '<small class="used'+(showU && u>v+0.004?' over':'')+'" id="u-'+a.id+'-'+w+'" title="Days logged in the Timesheet this week">'+(showU ? f1(u)+' used'+(u>v+0.004?' ▲':'') : '&nbsp;')+'</small></td>';
       }).join('')+'</tr>';
   });
   h+='<tr class="sum"><th class="sticky">Planned days</th>'+weeks.map(function(w){ return '<td class="num" data-tot="'+w+'"></td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Used days (Timesheet)</th>'+weeks.map(function(w){
         if(w>thisW) return '<td></td>';
         var ut=0; state.assignments.forEach(function(a){ ut+=usedDays(a,w); });
-        return '<td class="num">'+(ut?r1(round2(ut)):'0')+'</td>'; }).join('')+'</tr>'+
+        return '<td class="num">'+f1(ut)+'</td>'; }).join('')+'</tr>'+
      '<tr class="sum"><th class="sticky">Free days (of '+r1(CAP())+')</th>'+weeks.map(function(w){ return '<td class="num" data-free="'+w+'"></td>'; }).join('')+'</tr>'+
      '</tbody></table></div>'+plannerNote(pc);
   return h;
@@ -843,7 +934,7 @@ function refreshPlannerTotals(){
   document.querySelectorAll('[data-tot]').forEach(function(td){
     var w=td.getAttribute('data-tot'), t=0;
     state.assignments.forEach(function(a){ t+=plannedDays(a,w); });
-    td.textContent = t ? String(round2(t)) : '';
+    td.textContent = String(round2(t));
     td.className = 'num'+(t>CAP()+0.004?' over':'');
     var fr=$('[data-free="'+w+'"]');
     if(fr){ fr.textContent = String(round2(Math.max(0,CAP()-t))); fr.className='num'+(t>CAP()+0.004?' over':''); }
@@ -877,25 +968,26 @@ function renderTimesheet(){
   var h='<div class="bar"><h2>Timesheet</h2></div>'+
     '<div class="toolbar">'+seg([['t-mode-week','Week'],['t-mode-month','Month']], isM?'t-mode-month':'t-mode-week')+
     navGroup('t-prev','t-next',picker,'Previous '+word,'Next '+word)+
-    '<button class="btn" data-act="t-today">Today</button><span class="sp"></span>'+
-    '<button class="btn" data-act="t-weekends" aria-pressed="'+(!!state.settings.hideWeekends)+'">Weekends: '+(state.settings.hideWeekends?'hidden':'shown')+'</button></div>'+
-    '<p class="hint">'+(isM?'<strong>'+monthLabel(tsMonth)+'</strong>':'Week of '+fmtDay(weekAnchor)+' to '+fmtDay(addDays(weekAnchor,6)))+'. Enter days (0.5 steps) for day-rate work and hours for hourly work. Use the arrow keys or Enter to move between cells. Use the ✎ button for a note. On a phone, the Today tab is quicker.</p>';
+    '<button class="btn" data-act="t-today">Today</button>'+
+    '<label class="tg"><input type="checkbox" id="t-wk"'+(state.settings.hideWeekends?'':' checked')+'> Show weekends</label></div>'+
+    '<p class="hint">'+(isM?'<strong>'+monthLabel(tsMonth)+'</strong>':'Week of '+fmtDay(weekAnchor)+' to '+fmtDayY(addDays(weekAnchor,6)))+'. Days (0.5 steps) for day-rate clients, hours for hourly clients. <span class="tip">Arrow keys or Enter move between cells; ✎ adds a note.</span></p>';
   if(!rows.length) return h+'<div class="card">No client runs this '+word+'.</div>';
   h+='<div class="scroll"><table class="grid'+(isM?' mgrid':'')+'"><thead><tr><th class="sticky">Client</th>'+
     vd.map(function(d){ var we=(d.getDay()===0||d.getDay()===6), wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':''; return '<th class="'+(iso(d)===todayISO?'now':(we?'we':''))+wk+'">'+(isM?d.toLocaleDateString(LOC(),{weekday:'narrow'}):fmtDow(d))+'<br>'+d.getDate()+'</th>'; }).join('')+'<th>Total</th></tr></thead><tbody>';
   rows.forEach(function(a){
-    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+' · <button class="hlink under" data-fill="'+a.id+'">Fill from plan</button></small></th>'+
+    h+='<tr><th class="sticky rowh"><span class="dot" style="background:'+a.color+'"></span><span>'+esc(a.name)+'</span><small>'+subLabel(a)+'<span class="rr"> · <button class="hlink under" data-fill="'+a.id+'">Fill from plan</button></span></small></th>'+
       vd.map(function(d){
         var dI=iso(d), we=(d.getDay()===0||d.getDay()===6), q=state.entries[a.id+'|'+dI]||0, hasNote=!!state.notes[a.id+'|'+dI];
         var wk=(isM && d.getDay()===1 && d.getDate()>1)?' wk':'';
-        return '<td class="'+(dI===todayISO?'now':(we?'we':''))+wk+'"><input class="cell" inputmode="decimal" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', '+(a.rateType==='day'?'days':'hours')+' worked">'+(q?'<button class="x" data-clearentry="'+a.id+'|'+dI+'" aria-label="Clear entry" title="Clear entry">×</button>':'')+'<button class="nb'+(hasNote?' on':'')+'" data-opennote="'+a.id+'|'+dI+'" aria-label="'+(hasNote?'Edit note':'Add a note')+' for '+esc(a.name)+', '+dI+'" title="'+(hasNote?'Edit note':'Add a note')+'">✎</button></td>';
+        return '<td class="'+(dI===todayISO?'now':(we?'we':''))+wk+'"><div class="cw"><span class="iw"><input class="cell tcell" inputmode="decimal" placeholder="–" data-entry="'+a.id+'|'+dI+'" value="'+fmtN(q)+'" aria-label="'+esc(a.name)+', '+dI+', '+(a.rateType==='day'?'days':'hours')+' worked"><span class="cu" aria-hidden="true">'+unit(a)+'</span></span>'+
+          '<span class="ca">'+(q?'<button class="x" data-clearentry="'+a.id+'|'+dI+'" aria-label="Clear entry" title="Clear entry">×</button>':'')+'<button class="nb'+(hasNote?' on':'')+'" data-opennote="'+a.id+'|'+dI+'" aria-label="'+(hasNote?'Edit note':'Add a note')+' for '+esc(a.name)+', '+dI+'" title="'+(hasNote?'Edit note':'Add a note')+'">✎</button></span></div></td>';
       }).join('')+'<td class="tot num" id="rt-'+a.id+'"></td></tr>';
     if(noteKey && noteKey.split('|')[0]===a.id){
       var nd=parse(noteKey.split('|')[1]);
       h+='<tr class="noterow"><th class="sticky"></th><td colspan="'+(vd.length+1)+'"><label>Note for '+fmtDow(nd)+' '+fmtDay(nd)+'<textarea data-notetext="'+noteKey+'" placeholder="What did you work on?">'+esc(state.notes[noteKey]||'')+'</textarea></label><div class="ctl" style="margin-top:6px"><button class="btn small" data-act="note-close">Done</button></div></td></tr>';
     }
   });
-  h+='<tr class="sum"><th class="sticky">'+(isM?'Month':'Week')+' total</th><td colspan="'+(vd.length+1)+'" class="num" id="ft" style="text-align:right"></td></tr></tbody></table></div>'+
+  h+='<tr class="sum"><th class="sticky">Total (days)</th>'+vd.map(function(d){ return '<td class="num" data-dtot="'+iso(d)+'"></td>'; }).join('')+'<td class="tot num" id="ft"></td></tr></tbody></table></div>'+
     '<div class="tfoot"><button class="btn small danger" data-act="wk-clear">Clear this '+word+'…</button></div>';
   h+='<section class="card" id="bank" style="margin-top:16px"></section>';
   var nl=[]; days.forEach(function(d){ state.assignments.forEach(function(a){ var n=state.notes[a.id+'|'+iso(d)]; if(n) nl.push({ d:d, a:a, n:n }); }); });
@@ -911,7 +1003,17 @@ function refreshTimesheetTotals(){
     el.innerHTML = q ? (round2(q)+' '+unit(a)+'<small>'+money(q*a.rate,a.currency)+'</small>') : '';
     addTo(sums,a.currency,q*a.rate);
   });
-  var ft=$('#ft'); if(ft){ var ks=Object.keys(sums).filter(function(k){ return sums[k]>0; }); ft.textContent = ks.length ? ks.map(function(k){ return money(sums[k],k); }).join('  ·  ') : '—'; }
+  var totalDays=0;
+  document.querySelectorAll('[data-dtot]').forEach(function(td){
+    var d=td.getAttribute('data-dtot'), s=0;
+    state.assignments.forEach(function(a){ s+=dayEq(a,state.entries[a.id+'|'+d]||0); });
+    totalDays+=s; td.textContent = s>0.004 ? r1(round2(s)) : '';
+  });
+  var ft=$('#ft');
+  if(ft){
+    var ks=Object.keys(sums).filter(function(k){ return sums[k]>0; });
+    ft.innerHTML = totalDays>0.004 ? '<strong>'+r1(round2(totalDays))+' d</strong>'+(ks.length?'<small>'+ks.map(function(k){ return money(sums[k],k); }).join(' · ')+'</small>':'') : '—';
+  }
 }
 
 /* Suggests the next invoice number from the most recent one: INV-012 -> INV-013, FT 2026/12 -> FT 2026/13. */
@@ -969,27 +1071,32 @@ function renderIncome(){
       var st=statusOf(s), key=a.id+'|'+ym, sugg=suggestInvoiceNo(ym), sym=({GBP:'£',EUR:'€',USD:'$'}[a.currency]||esc(a.currency));
       addTo(tot,a.currency,s.F); totD+=s.Fd;
       var canFull = s.L>0.004 && s.R<s.L-0.005;
+      var hasNo=!!(s.inv && s.inv.no), hasFile=!!(s.inv && s.inv.file), offer=!hasNo && sugg;
+      var billable = s.L>0.004 || s.R>0.004;
+      /* One compact cell: number (with the suggestion shown inside it, Enter accepts) + attach / open icon, then the sent date */
       var invCell = s.L>0.004
-        ? '<input class="inv" data-invno="'+key+'" value="'+esc(s.inv?s.inv.no:'')+'" placeholder="Invoice no." aria-label="Invoice number for '+esc(a.name)+', '+monthLabel(ym)+'">'+
-          ((!s.inv || !s.inv.no) && sugg ? '<small><button class="hlink under" data-invuse="'+key+'" title="Suggested from your last invoice number">Use '+esc(sugg)+'</button></small>' : '')+
+        ? '<span class="invc"><input class="inv" data-invno="'+key+'"'+(offer?' data-sugg="'+esc(sugg)+'"':'')+' value="'+esc(hasNo?s.inv.no:'')+'" placeholder="'+esc(offer?sugg:'Invoice no.')+'"'+(offer?' title="Suggested: '+esc(sugg)+'. Press Enter to use it."':'')+' aria-label="Invoice number for '+esc(a.name)+', '+monthLabel(ym)+(offer?'. Suggested '+esc(sugg)+', press Enter to use it':'')+'">'+
+            (hasFile
+              ? '<button class="ibtn" data-invopen="'+key+'" title="Open invoice file ('+esc(s.inv.file)+')" aria-label="Open invoice file">'+ICON_FILE+'</button>'
+              : (supportsDir ? '<button class="ibtn" data-invattach="'+key+'" title="Attach the invoice file" aria-label="Attach the invoice file">'+ICON_CLIP+'</button>' : ''))+'</span>'+
           '<small><input class="dt" type="date" data-invsent="'+key+'" value="'+esc(s.inv?s.inv.sent:'')+'" aria-label="Invoice sent date for '+esc(a.name)+', '+monthLabel(ym)+'"></small>'+
-          (s.inv && s.inv.file
-            ? '<small><button class="hlink under" data-invopen="'+key+'" title="'+esc(s.inv.file)+'">Open invoice file</button> · <button class="hlink under" data-invdetach="'+key+'">Remove link</button></small>'
-            : (supportsDir ? '<small><button class="btn small" data-invattach="'+key+'">Attach invoice</button></small>' : ''))
+          (hasFile ? '<small><button class="hlink under" data-invdetach="'+key+'">Remove link</button></small>' : '')
         : '—';
       rows+='<tr><td><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</td>'+
         '<td class="num">'+(s.qty?round2(s.qty)+' '+unit(a):'—')+'<small>'+(s.L?money(s.L,a.currency):'')+'</small></td>'+
         '<td class="num">'+(s.Fq>0.004?r1(round2(s.Fq))+' '+unit(a):'—')+'<small>'+(s.F>0.004?money(s.F,a.currency):'')+'</small></td>'+
         '<td>'+invCell+'</td>'+
-        '<td><span class="amtwrap"><span class="cur" aria-hidden="true">'+sym+'</span><input class="amt'+mk()+'" inputmode="decimal" data-rec="'+key+'" value="'+(s.R?String(round2(s.R)):'')+'" placeholder="0" aria-label="Received in '+esc(a.currency)+' for '+esc(a.name)+', '+monthLabel(ym)+'"></span>'+
-          (s.rec?'<small><input class="dt" type="date" data-recdate="'+key+'" value="'+esc(s.rec.date||'')+'" aria-label="Date received"></small>':'')+
-          (canFull?'<small><button class="btn small primary" data-full="'+key+'">Mark received</button></small>':'')+'</td>'+
-        '<td class="num">'+fmtDayY(parse(s.due))+'</td>'+
+        '<td>'+(billable
+          ? '<span class="amtwrap"><span class="cur" aria-hidden="true">'+sym+'</span><input class="amt'+mk()+'" inputmode="decimal" data-rec="'+key+'" value="'+(s.R?String(round2(s.R)):'')+'" placeholder="–" aria-label="Received in '+esc(a.currency)+' for '+esc(a.name)+', '+monthLabel(ym)+'"></span>'+
+            (s.rec?'<small><input class="dt" type="date" data-recdate="'+key+'" value="'+esc(s.rec.date||'')+'" aria-label="Date received"></small>':'')+
+            (canFull?'<small><button class="btn small primary" data-full="'+key+'">Mark received</button></small>':'')
+          : '—')+'</td>'+
+        '<td class="num">'+(billable?fmtDayY(parse(s.due)):'—')+'</td>'+
         '<td><span class="pill '+st[0]+'">'+st[1]+'</span></td></tr>';
     });
     if(!rows) return '';
     var tl=Object.keys(tot).filter(function(k){ return tot[k]>0.004; }).map(function(k){ return money(tot[k],k); }).join(' · ');
-    return '<section class="month'+(ym===cur?' cur':'')+'"><h3><span>'+monthLabel(ym)+'</span><span class="mt">Forecast '+r1(round2(totD))+' days'+(tl?' · '+tl:'')+'</span></h3>'+
+    return '<section class="month'+(ym===cur?' cur':'')+'"><h3><span>'+monthLabel(ym)+'</span>'+(ym===cur?'<span class="chip">This month</span>':'')+'<span class="mt">Forecast '+r1(round2(totD))+' days'+(tl?' · '+tl:'')+'</span></h3>'+
       '<div class="scroll"><table class="inc"><thead><tr><th>Client</th><th>Logged</th><th>Forecast</th><th>Invoice</th><th>Received</th><th>Due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
   }
   var upcoming = months.filter(function(m){ return m>=cur; }).map(monthBlock).join('');
@@ -1036,10 +1143,10 @@ function curText(map){
 function reportData(){
   var P=periodOf(repType,repAnchor), f=iso(P.from), t=iso(P.to), d;
   var as=state.assignments.filter(function(a){ return repFilter==='all' || a.id===repFilter; });
-  var per={}, lines=[], work=0;
+  var per={}, lines=[], work=0, soFar=0;
   as.forEach(function(a){ per[a.id]={ qty:0, deq:0, hours:0, earned:0, planned:0, received:0 }; });
   for(d=new Date(P.from); d<=P.to; d=addDays(d,1)){
-    var dI=iso(d); if((d.getDay()+6)%7<5) work++;
+    var dI=iso(d); if((d.getDay()+6)%7<5){ work++; if(dI<=todayISO) soFar++; }
     as.forEach(function(a){
       var k=a.id+'|'+dI, q=state.entries[k]||0, n=state.notes[k]||'', s=per[a.id];
       s.planned+=plannedOnDate(a,dI);
@@ -1052,7 +1159,7 @@ function reportData(){
     var p=state.payments[k], s=per[k.split('|')[0]];
     if(s && p.date && p.date>=f && p.date<=t) s.received+=p.amount;
   });
-  return { P:P, f:f, t:t, as:as, per:per, lines:lines, work:work };
+  return { P:P, f:f, t:t, as:as, per:per, lines:lines, work:work, workSoFar:soFar };
 }
 /* Stacked columns of days worked per sub-period. Colours are each client's own colour; the table below carries the exact values. */
 function chartHTML(subs, worked, R){
@@ -1062,7 +1169,7 @@ function chartHTML(subs, worked, R){
   });
   var totals=subs.map(function(_,i){ return series.reduce(function(s,x){ return s+x.vals[i]; },0); });
   var top=Math.max(1,Math.ceil(Math.max.apply(null,totals)));
-  var W=640,H=240,L=36,Rm=8,T=22,B=30,cw=W-L-Rm,ch=H-T-B,slot=cw/n,bw=Math.min(56,slot*0.62);
+  var W=960,H=240,L=36,Rm=8,T=22,B=30,cw=W-L-Rm,ch=H-T-B,slot=cw/n,bw=Math.min(48,slot*0.6);
   var short=function(sp){ var d=parse(sp.from); return repType==='week' ? fmtDow(d)+' '+d.getDate() : (repType==='month' ? fmtDay(d) : d.toLocaleDateString(LOC(),{month:'short'})); };
   var lbl='Days worked per period: '+subs.map(function(sp,i){ return short(sp)+' '+r1(round2(totals[i])); }).join(', ');
   var svg='<svg class="ch" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(lbl)+'">';
@@ -1078,8 +1185,9 @@ function chartHTML(subs, worked, R){
     svg+='<text x="'+cx+'" y="'+(H-10)+'" text-anchor="middle">'+esc(short(sp))+'</text>';
   });
   svg+='</svg>';
-  var legend='<div class="legend2">'+worked.map(function(a){ return '<span><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</span>'; }).join('')+'</div>';
-  return '<section class="rsec"><h3>Days worked</h3><div class="card">'+svg+legend+'</div></section>';
+  /* a legend is only useful when there is more than one client to tell apart */
+  var legend=worked.length>1 ? '<div class="legend2">'+worked.map(function(a){ return '<span><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</span>'; }).join('')+'</div>' : '';
+  return '<section class="rsec"><h3>Days worked'+(worked.length===1?' · '+esc(worked[0].name):'')+'</h3><div class="card"><div class="scrollx">'+svg+'</div>'+legend+'</div></section>';
 }
 function renderReports(){
   if(!state.assignments.length) return emptyState();
@@ -1088,7 +1196,9 @@ function renderReports(){
   R.as.forEach(function(a){ var s=R.per[a.id]; tot.deq+=s.deq; tot.hours+=s.hours; tot.planned+=s.planned; addTo(earned,a.currency,s.earned); addTo(received,a.currency,s.received); });
   var isCur = iso(periodOf(repType,today).from)===R.f;
   var fname = repFilter==='all' ? '' : byId(repFilter).name;
-  var util = R.work ? tot.deq/R.work : 0;
+  /* In the current period, utilisation is measured against the working days that have already passed, not the whole period */
+  var den = isCur ? R.workSoFar : (R.f>todayISO ? 0 : R.work);
+  var util = den ? tot.deq/den : 0;
   var h='<div class="bar"><h2>Reports</h2>'+
     '<details class="menu noprint"><summary class="btn primary">Export ▾</summary><div class="pop">'+
       '<button data-act="r-csv">Download CSV</button><button data-act="r-print">Print / save as PDF</button></div></details></div>'+
@@ -1099,7 +1209,7 @@ function renderReports(){
     '<p class="hint"><strong>'+esc(R.P.label)+'</strong>'+(isCur?' (current)':'')+' · '+fmtDayY(R.P.from)+' to '+fmtDayY(R.P.to)+' · '+(fname?esc(fname):'All clients')+'</p>';
   h+='<div class="tiles">'+
     '<div class="tile"><div class="k">Days worked</div><div class="v">'+r1(round2(tot.deq))+'</div><small>≈ '+r1(round2(tot.hours))+' hours · planned '+r1(round2(tot.planned))+' days</small></div>'+
-    '<div class="tile"><div class="k">Utilisation</div><div class="v">'+(R.work?Math.round(util*100)+'%':'—')+'</div>'+(R.work?'<div class="meter" role="img" aria-label="'+Math.round(util*100)+' percent of working days"><span style="width:'+Math.min(100,Math.round(util*100))+'%"></span></div>':'')+'<small>of '+R.work+' working days (Mon–Fri)</small></div>'+
+    '<div class="tile"><div class="k">Utilisation</div><div class="v">'+(den?Math.round(util*100)+'%':'—')+'</div>'+(den?'<div class="meter" role="img" aria-label="'+Math.round(util*100)+' percent of working days"><span style="width:'+Math.min(100,Math.round(util*100))+'%"></span></div>':'')+'<small>'+(isCur ? 'of '+R.workSoFar+' working days so far ('+R.work+' in the period)' : 'of '+R.work+' working days (Mon–Fri)')+'</small></div>'+
     '<div class="tile"><div class="k">Earned</div>'+curLines(earned)+'<small>Logged time × rate</small></div>'+
     '<div class="tile"><div class="k">Received</div>'+curLines(received)+'<small>Payments dated in this period</small></div>'+
     '</div>';
@@ -1126,15 +1236,15 @@ function renderReports(){
         dsum+=dayEq(a,q); addTo(em,a.currency,q*a.rate);
         return '<td class="num">'+(q?r1(round2(q))+' '+unit(a):'—')+'</td>';
       }).join('');
-      br+='<tr><td>'+sp.label+'</td>'+cells+'<td class="num">'+(dsum?r1(round2(dsum)):'—')+'</td><td class="num">'+curText(em)+'</td></tr>';
+      br+='<tr'+(dsum?'':' class="idle"')+'><td>'+sp.label+'</td>'+cells+'<td class="num">'+(dsum?r1(round2(dsum)):'—')+'</td><td class="num">'+curText(em)+'</td></tr>';
     });
     br+='<tr class="rtot"><td>Total</td>'+worked.map(function(a){ return '<td class="num">'+r1(round2(R.per[a.id].qty))+' '+unit(a)+'</td>'; }).join('')+'<td class="num">'+r1(round2(tot.deq))+'</td><td class="num">'+curText(earned)+'</td></tr>';
     var byLbl={ week:'By day', month:'By week', quarter:'By month', half:'By month', year:'By month' }[repType];
     h+='<section class="rsec"><h3>'+byLbl+'</h3><div class="scroll"><table class="inc"><thead><tr><th>Period</th>'+worked.map(function(a){ return '<th><span class="dot" style="background:'+a.color+'"></span> '+esc(a.name)+'</th>'; }).join('')+'<th>Days</th><th>Earned</th></tr></thead><tbody>'+br+'</tbody></table></div></section>';
   }
   if(R.lines.length){
-    h+='<section class="rsec"><h3>Detail</h3><div class="scroll"><table class="inc"><thead><tr><th>Date</th><th>Client</th><th>Time</th><th>Amount</th><th style="text-align:left">Note</th></tr></thead><tbody>'+
-      R.lines.map(function(x){ var d=parse(x.date); return '<tr><td>'+fmtDow(d)+' '+fmtDayY(d)+'</td><td><span class="dot" style="background:'+x.a.color+'"></span> '+esc(x.a.name)+'</td><td class="num">'+(x.q?r1(x.q)+' '+unit(x.a):'—')+'</td><td class="num">'+(x.q?money(x.amt,x.a.currency):'—')+'</td><td class="note">'+esc(x.note).replace(/\n/g,'<br>')+'</td></tr>'; }).join('')+
+    h+='<section class="rsec"><h3>Detail</h3><div class="scroll"><table class="inc"><thead><tr><th>Date</th><th class="l">Client</th><th>Time</th><th>Amount</th><th style="text-align:left">Note</th></tr></thead><tbody>'+
+      R.lines.map(function(x){ var d=parse(x.date); return '<tr><td>'+fmtDow(d)+' '+fmtDayY(d)+'</td><td class="l"><span class="dot" style="background:'+x.a.color+'"></span> '+esc(x.a.name)+'</td><td class="num">'+(x.q?r1(x.q)+' '+unit(x.a):'—')+'</td><td class="num">'+(x.q?money(x.amt,x.a.currency):'—')+'</td><td class="note">'+esc(x.note).replace(/\n/g,'<br>')+'</td></tr>'; }).join('')+
       '</tbody></table></div></section>';
   }
   h+='<p class="foot">Days convert hourly work at the client’s hours per day. Hours for day-rate work use the client’s hours per day (8 if not set). Totals are per currency, with no conversion.</p>';
@@ -1193,21 +1303,38 @@ function renderAssignments(){
       '<label>Days I plan to work per week<input id="f-pw" inputmode="decimal" value="'+esc(v.perWeek)+'"><span class="help">Your plan. It feeds the Planner and the income forecast, and you can change it week by week.</span></label>'+
       '<label>Contract allowance<select id="f-amode"><option value="none"'+(am==='none'?' selected':'')+'>None (don’t track)</option><option value="week"'+(am==='week'?' selected':'')+'>Per week, unused roll over</option><option value="month"'+(am==='month'?' selected':'')+'>Per month, unused roll over</option><option value="total"'+(am==='total'?' selected':'')+'>One total pot of days</option></select><span class="help">What the client contracted. It feeds “Contract days left” in the Timesheet.</span></label>'+
       '<label id="adays-wrap"'+(am==='none'?' hidden':'')+'>Contract days<input id="f-adays" inputmode="decimal" value="'+esc(v.allowDays||'')+'"><span class="help">Days per week or month, or the total for the whole contract.</span><span class="ferr" id="e-adays" role="alert"></span></label></div>'+
-    '<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">'+(a?'Save changes':'Add client')+'</button>'+((a||state.assignments.length)?'<button class="btn" type="button" data-act="cancel-edit">Cancel</button>':'')+'</div></form>';
+    '<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">'+(a?'Save changes':'Add client')+'</button>'+((a||state.assignments.length)?'<button class="btn" type="button" data-act="cancel-edit">Cancel</button>':'')+(a?'<button class="btn danger" type="button" data-del="'+a.id+'" style="margin-left:auto">Delete client</button>':'')+'</div></form>';
   }
-  h+='<div class="alist">'+state.assignments.map(function(x){
-    var b=bankAt(x,iso(monday(today))), logged=usedBetween(x,'0000-01-01',todayISO);
-    return '<div class="arow"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong><div class="meta">'+subLabel(x)+' · '+fmtDayY(parse(x.start))+' to '+(x.end?fmtDayY(parse(x.end)):'open-ended')+' · pays in '+x.terms+' days</div>'+
-      '<div class="meta">Plan '+r1(x.perWeek)+' d/week · Logged '+r1(round2(logged))+' d'+(b?' · Contract days left <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div>'+
-      (x.description?'<div class="desc">'+esc(x.description).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
-      '<div class="ctl"><button class="btn small" data-edit="'+x.id+'">Edit</button><button class="btn small danger" data-del="'+x.id+'">Delete</button></div></div>';
-  }).join('')+'</div>';
-  h+='<section class="card" style="margin-top:24px"><h3 style="margin-bottom:10px">Settings</h3><form class="f" id="sform" novalidate>'+
+  /* Active and upcoming clients first; ended ones are grouped, dimmed and collapsed */
+  var stateOf=function(x){ if(x.end && x.end<todayISO) return ['ended','Ended']; if(x.start>todayISO) return ['soon','Starts '+fmtDayY(parse(x.start))]; return ['active','Active']; };
+  var clientRow=function(x){
+    var st=stateOf(x), b=bankAt(x,iso(monday(today))), logged=usedBetween(x,'0000-01-01',todayISO);
+    return '<div class="arow'+(st[0]==='ended'?' ended':'')+'"><div><span class="dot" style="background:'+x.color+'"></span> <strong>'+esc(x.name)+'</strong> <span class="chip '+st[0]+'">'+esc(st[1])+'</span>'+
+      '<div class="meta"><span class="ml">Work</span>'+subLabel(x)+' · plan '+r1(x.perWeek)+' d/week</div>'+
+      '<div class="meta"><span class="ml">Contract</span>'+fmtDayY(parse(x.start))+' to '+(x.end?fmtDayY(parse(x.end)):'open-ended')+' · pays in '+x.terms+' days</div>'+
+      '<div class="meta"><span class="ml">Progress</span>'+r1(round2(logged))+' d logged'+(b?' · contract days left <strong class="'+(b.balance<-0.004?'over':'')+'">'+r1(b.balance)+'</strong>':'')+'</div>'+
+      (x.description?'<div class="desc">'+esc(x.description).replace(/\n/g,'<br>')+'</div>':'')+
+      ((x.docs&&x.docs.length)||supportsDir ? '<div class="docs">'+(x.docs||[]).slice().sort(function(p,q){ return p.date<q.date?1:(p.date>q.date?-1:0); }).map(function(d){
+          return '<div class="doc"><button class="hlink under" data-docopen="'+x.id+'|'+d.id+'" title="Open '+esc(d.file)+'">'+ICON_FILE+'<span>'+esc(d.type)+(d.label?': '+esc(d.label):'')+' · '+fmtDayY(parse(d.date))+'</span></button><button class="hlink" data-docdel="'+x.id+'|'+d.id+'" aria-label="Remove the link to '+esc(d.type)+' '+esc(d.date)+'" title="Remove link (the file stays in the folder)">×</button></div>'; }).join('')+
+        (supportsDir?'<button class="btn small" data-docadd="'+x.id+'">Add document</button>':'')+'</div>' : '')+'</div>'+
+      '<div class="ctl"><button class="btn small" data-edit="'+x.id+'">Edit</button></div></div>';
+  };
+  var activeL=state.assignments.filter(function(x){ return stateOf(x)[0]!=='ended'; });
+  var endedL=state.assignments.filter(function(x){ return stateOf(x)[0]==='ended'; }).sort(function(p,q){ return p.end<q.end?1:(p.end>q.end?-1:0); });
+  h+='<div class="alist">'+activeL.map(clientRow).join('')+'</div>';
+  if(endedL.length) h+='<details class="past" id="ended-d"'+((endedOpen||!activeL.length)?' open':'')+'><summary>Ended clients ('+endedL.length+')</summary><div class="alist" style="margin-top:0">'+endedL.map(clientRow).join('')+'</div></details>';
+  return h;
+}
+
+/* Everything that is not a client lives here */
+function renderSettings(){
+  var h='<div class="bar"><h2>Settings</h2></div>';
+  h+='<section class="card"><h3 style="margin-bottom:10px">General</h3><form class="f" id="sform" novalidate>'+
     '<label>Working days per week (capacity)<input id="s-cap" inputmode="decimal" value="'+esc(r1(CAP()))+'"><span class="help">Used by the Planner to show free days. Use 3 or 4 if you work part-time.</span></label>'+
     '<label>Date and number format<select id="s-loc">'+LOCALES.map(function(l){ return '<option value="'+l[0]+'"'+(LOC()===l[0]?' selected':'')+'>'+l[1]+'</option>'; }).join('')+'</select><span class="help">Weeks start on Monday.</span></label>'+
-    '<label class="chk"><input type="checkbox" id="s-hw"'+(state.settings.hideWeekends?' checked':'')+'> Hide weekends in Today and Timesheet</label></form></section>';
+    '<label class="chk"><input type="checkbox" id="s-hw"'+(state.settings.hideWeekends?'':' checked')+'> Show weekends in Today and Timesheet</label></form></section>';
   h+='<section class="card" style="margin-top:16px"><h3>Data file</h3><p class="hint">'+(connected?'Saving to <strong>'+esc(fileName)+'</strong>. Keep it in a cloud-synced folder.':'Not connected to a file.')+'</p><div class="ctl">'+(supportsFS?'<button class="btn small" data-act="fs-switch">Switch file</button>':'')+'<button class="btn small" data-act="export">Export copy</button><button class="btn small" data-act="import">Import…</button></div></section>';
-  if(supportsDir) h+='<section class="card" style="margin-top:16px"><h3>Invoice folder</h3><p class="hint">'+(invDir?'Invoices are copied to <strong>'+esc(invDir.name)+'</strong>, organised as <em>Year / Month / InvoiceNo_Client_YYYY-MM.pdf</em>, for example <em>2026/10/2026-INV001_Wrangu-Barclays_2026-10.pdf</em>. The year and month are the month the invoice covers. Use the number exactly as it appears on the invoice.':'Choose a folder (for example inside OneDrive) where invoice files are copied when you attach them in the Income tab. Files are organised as <em>Year / Month / InvoiceNo_Client_YYYY-MM.pdf</em>.')+'</p><div class="ctl"><button class="btn small" data-act="inv-folder">'+(invDir?'Change folder':'Choose folder')+'</button></div></section>';
+  if(supportsDir) h+='<section class="card" style="margin-top:16px"><h3>Invoice folder</h3><p class="hint">'+(invDir?'Attached files are copied to <strong>'+esc(invDir.name)+'</strong>. Invoices: <em>Year / Month / InvoiceNo_Client_YYYY-MM.pdf</em>. Client documents: <em>Contracts / Client_Type_YYYY-MM-DD.pdf</em>.':'Choose a folder (for example in OneDrive). Invoices and client documents you attach are copied there.')+'</p><div class="ctl"><button class="btn small" data-act="inv-folder">'+(invDir?'Change folder':'Choose folder')+'</button></div></section>';
   h+=pwCardHTML();
   if(state.assignments.length) h+='<div style="margin-top:24px" class="ctl"><button class="btn small danger" data-act="clear">Clear all data</button></div>';
   return h;
@@ -1238,7 +1365,7 @@ function render(){
   bn.innerHTML=bh;
   if(!loaded){ m.innerHTML='<p class="hint">Loading…</p>'; return; }
   if(supportsFS && !connected){ m.innerHTML=renderConnect(); return; }
-  m.innerHTML = ({today:renderToday,planner:renderPlanner,timesheet:renderTimesheet,income:renderIncome,reports:renderReports,assignments:renderAssignments})[view]();
+  m.innerHTML = ({today:renderToday,planner:renderPlanner,timesheet:renderTimesheet,income:renderIncome,reports:renderReports,assignments:renderAssignments,settings:renderSettings})[view]();
   if(view==='planner') refreshPlannerTotals();
   if(view==='timesheet') refreshTimesheetTotals();
 }
@@ -1287,6 +1414,12 @@ function fillFromPlan(id, days){
 function closeMenus(except){ document.querySelectorAll('details.menu[open]').forEach(function(d){ if(d!==except) d.open=false; }); }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenus(); });
 
+/* Enter in an empty invoice number accepts the suggestion shown inside the field */
+document.addEventListener('keydown', function(e){
+  var t=e.target; if(e.key!=='Enter' || !t.matches || !t.matches('input.inv') || t.value || !t.getAttribute('data-sugg')) return;
+  e.preventDefault(); t.value=t.getAttribute('data-sugg'); t.dispatchEvent(new Event('change',{bubbles:true})); renderKeepFocus();
+});
+
 /* Spreadsheet-style movement between cells: arrows and Enter */
 document.addEventListener('keydown', function(e){
   var t=e.target; if(!t.matches || !t.matches('input.cell')) return;
@@ -1303,7 +1436,11 @@ document.addEventListener('keydown', function(e){
   if(target){ e.preventDefault(); target.focus(); target.select(); }
 });
 
-document.addEventListener('toggle', function(e){ if(e.target && e.target.id==='past-d') pastOpen=e.target.open; }, true);
+document.addEventListener('toggle', function(e){
+  if(!e.target) return;
+  if(e.target.id==='past-d') pastOpen=e.target.open;
+  else if(e.target.id==='ended-d') endedOpen=e.target.open;
+}, true);
 
 document.addEventListener('click', function(e){
   closeMenus(e.target.closest('details.menu'));
@@ -1383,7 +1520,7 @@ document.addEventListener('click', function(e){
   else if(t.hasAttribute('data-edit')){ editing=t.getAttribute('data-edit'); showForm=true; render(); window.scrollTo(0,0); var nm2=$('#f-name'); if(nm2) nm2.focus(); }
   else if(t.hasAttribute('data-del')){
     var id=t.getAttribute('data-del'), da=byId(id); if(!da) return;
-    askConfirm('Delete “'+da.name+'”?', 'This deletes the client and all its planned days, time entries, notes, invoices and payments. You can undo it right after.', 'Delete client', function(){
+    askConfirm('Delete “'+da.name+'”?', 'This deletes the client and all its planned days, time entries, notes, invoices, document links and payments. The files in your folder are not deleted. You can undo it right after.', 'Delete client', function(){
       var snap=snapshot();
       removeAssignment(id); if(editing===id) editing=null; changed(); render(); toast('“'+da.name+'” deleted', snap);
     });
@@ -1396,7 +1533,7 @@ document.addEventListener('click', function(e){
   }
   else if(t.hasAttribute('data-resetrow')){
     var rid=t.getAttribute('data-resetrow'), snapR=snapshot(), i2;
-    for(i2=0;i2<14;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; }
+    for(i2=0;i2<12;i2++){ delete state.plan[rid+'|'+iso(addDays(plannerStart,i2*7))]; }
     changed(); render(); toast('Planned days reset to the default', snapR);
   }
   else if(act==='inv-folder'){
@@ -1416,6 +1553,22 @@ document.addEventListener('click', function(e){
     if(us){ var uc=state.invoices[uk] || { no:'', sent:'' }; uc.no=us; state.invoices[uk]=uc; changed(); renderKeepFocus(); if(uc.file) renameInvoiceFile(uk); }
   }
   else if(t.hasAttribute('data-invopen')){ openInvoice(t.getAttribute('data-invopen')); }
+  else if(t.hasAttribute('data-docadd')){
+    var dcid=t.getAttribute('data-docadd');
+    (async function(){
+      if(!invDir){ if(!(await pickInvDir())) return; render(); toast('Folder set to '+invDir.name); }
+      openDocDialog(dcid);
+    })();
+  }
+  else if(act==='dd-cancel'){ $('#docdlg').close(); }
+  else if(t.hasAttribute('data-docopen')){
+    var dop=t.getAttribute('data-docopen').split('|'), dca=byId(dop[0]), dco=dca && (dca.docs||[]).filter(function(d){ return d.id===dop[1]; })[0];
+    if(dco) openStored(dco.file);
+  }
+  else if(t.hasAttribute('data-docdel')){
+    var ddp=t.getAttribute('data-docdel').split('|'), dda=byId(ddp[0]), snapDoc=snapshot();
+    if(dda){ dda.docs=(dda.docs||[]).filter(function(d){ return d.id!==ddp[1]; }); changed(); render(); toast('Link removed. The file stays in the folder.', snapDoc); }
+  }
   else if(t.hasAttribute('data-invdetach')){
     var idk=t.getAttribute('data-invdetach'), snapD=snapshot();
     if(state.invoices[idk]){ delete state.invoices[idk].file; changed(); render(); toast('Link removed. The file itself was not deleted.', snapD); }
@@ -1451,7 +1604,8 @@ document.addEventListener('change', function(e){
     var v=blank?defaultWeek(a,p[1]):Math.min(7,Math.max(0,round2(num(t.value))));
     if(blank||v===defaultWeek(a,p[1])) delete state.plan[k]; else state.plan[k]=v;
     t.value=planVal(a,p[1]); t.className='cell l'+Math.min(5,Math.ceil(v));
-    var usm=$('#u-'+a.id+'-'+p[1]); if(usm){ var uu=usedDays(a,p[1]); usm.className='used'+(uu>v+0.004?' over':''); usm.textContent=r1(round2(uu))+' used'+(uu>v+0.004?' ▲':''); }
+    var usm=$('#u-'+a.id+'-'+p[1]);
+    if(usm){ var uu=usedDays(a,p[1]), sh=p[1]<=iso(monday(today)) && (uu>0.004 || v>0.004); usm.className='used'+(sh && uu>v+0.004?' over':''); usm.innerHTML = sh ? f1(uu)+' used'+(uu>v+0.004?' ▲':'') : '&nbsp;'; }
     refreshPlannerTotals(); changed();
   } else if(t.hasAttribute('data-entry')){
     var k2=t.getAttribute('data-entry'), a2=byId(k2.split('|')[0]); if(!a2) return;
@@ -1492,8 +1646,10 @@ document.addEventListener('change', function(e){
     state.settings.capacity=Math.min(7,Math.max(0.5,round2(num(t.value))||5)); changed(); render();
   } else if(t.id==='s-loc'){
     state.settings.locale=t.value; changed(); render();
+  } else if(t.id==='t-wk'){
+    state.settings.hideWeekends=!t.checked; changed(); render();
   } else if(t.id==='s-hw'){
-    state.settings.hideWeekends=t.checked; changed(); render();
+    state.settings.hideWeekends=!t.checked; changed(); render();
   } else if(t.id==='f-amode'){
     var aw=$('#adays-wrap'); if(aw) aw.hidden=(t.value==='none');
     var ad=$('#f-adays'), pw=$('#f-pw'); if(ad && pw && t.value==='week' && !ad.value.trim()) ad.value=pw.value;
@@ -1523,6 +1679,7 @@ document.addEventListener('change', function(e){
 
 document.addEventListener('submit', function(e){
   if(e.target.id==='sform'){ e.preventDefault(); return; }
+  if(e.target.id==='docform'){ e.preventDefault(); saveDoc(); return; }
   if(e.target.id!=='aform') return;
   e.preventDefault();
   ['name','rate','start','end','adays'].forEach(function(k){ fieldErr(k,''); });
@@ -1547,7 +1704,7 @@ document.addEventListener('submit', function(e){
   showForm=false; changed(); render(); toast('Client saved');
 });
 
-var VIEWS=['today','planner','timesheet','income','reports','assignments'];
+var VIEWS=['today','planner','timesheet','income','reports','assignments','settings'];
 document.addEventListener('submit', async function(e){
   var f=e.target;
   if(f.id==='lockform'){
